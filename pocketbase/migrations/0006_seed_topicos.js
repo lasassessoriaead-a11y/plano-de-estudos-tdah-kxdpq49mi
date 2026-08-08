@@ -905,6 +905,12 @@ migrate(
       ],
     ]
 
+    var tipoMap = {
+      esquema: 'esqueleto',
+      mapa_mental: 'fluxograma',
+      topicos_diretos: 'pratica',
+    }
+
     for (var i = 0; i < T.length; i++) {
       var row = T[i]
       try {
@@ -914,7 +920,7 @@ migrate(
         rec.set('materia_id', matMap[row[0]])
         rec.set('titulo', row[1])
         rec.set('prioridade', row[2])
-        rec.set('tipo', row[3])
+        rec.set('tipo', tipoMap[row[3]] || row[3])
         rec.set('descricao', row[4])
         app.save(rec)
       }

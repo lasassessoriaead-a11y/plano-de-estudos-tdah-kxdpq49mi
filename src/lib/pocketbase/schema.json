@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-08T14:56:55.281Z",
+  "generatedAt": "2026-08-08T15:09:29.650Z",
   "collections": [
     {
       "name": "users",
@@ -504,6 +504,14 @@
           "type": "text",
           "required": false,
           "system": false
+        },
+        {
+          "name": "embedding",
+          "type": "vector",
+          "required": false,
+          "system": false,
+          "vectorDimensions": 1536,
+          "vectorDistance": "cosine"
         },
         {
           "name": "created",
