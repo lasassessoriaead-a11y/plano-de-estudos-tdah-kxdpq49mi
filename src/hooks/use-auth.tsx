@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email,
         password,
         passwordConfirm: password,
-        name: name || 'Estudante TDAH',
+        name: name || 'Luis Gustavo',
       })
       await pb.collection('users').authWithPassword(email, password)
       return { error: null }
