@@ -5,6 +5,8 @@ import { getQuestoes, updateQuestao, QuestaoRecord } from '@/services/questoes'
 import { saveProgresso } from '@/services/progresso'
 import { SubjectBadge } from '@/components/SubjectBadge'
 import { BreathingCircle } from '@/components/BreathingCircle'
+import { RewardConfigDialog } from '@/components/RewardConfigDialog'
+import { getRecompensas, RecompensaRecord } from '@/services/recompensas'
 import { Button } from '@/components/ui/button'
 import {
   Target,
@@ -16,6 +18,7 @@ import {
   X,
   RotateCcw,
   Sparkles,
+  Gift,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
@@ -38,12 +41,24 @@ export default function MissaoHoje() {
   const [currentQIdx, setCurrentQIdx] = useState<number>(0)
   const [selectedAlt, setSelectedAlt] = useState<number | null>(null)
   const [answered, setAnswered] = useState<boolean>(false)
+  const [recompensasMap, setRecompensasMap] = useState<Record<string, RecompensaRecord>>({})
 
   const hoje = new Date().toISOString().split('T')[0]
 
   const loadMissoes = async () => {
     const data = await getMissoesData(hoje)
     setMissoes(data)
+
+    try {
+      const recList = await getRecompensas()
+      const rMap: Record<string, RecompensaRecord> = {}
+      recList.forEach((r) => {
+        rMap[r.missao_id] = r
+      })
+      setRecompensasMap(rMap)
+    } catch (err) {
+      console.error(err)
+    }
 
     const urlId = searchParams.get('id')
     if (urlId) {
@@ -402,20 +417,34 @@ export default function MissaoHoje() {
                   </div>
 
                   <h3 className="text-base font-extrabold text-slate-900">{m.titulo}</h3>
+                  {recompensasMap[m.id] && (
+                    <div className="flex items-center gap-1.5 text-xs text-violet-600 font-bold">
+                      <Gift className="w-3.5 h-3.5" />
+                      <span className="truncate">{recompensasMap[m.id].titulo}</span>
+                    </div>
+                  )}
                 </div>
-
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                  <span
-                    className={`text-xs font-extrabold ${
-                      isDone ? 'text-emerald-600' : 'text-amber-600'
-                    }`}
-                  >
-                    {isDone ? '✓ Concluído' : '• Pendente'}
-                  </span>
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className={`text-xs font-extrabold ${
+                        isDone ? 'text-emerald-600' : 'text-amber-600'
+                      }`}
+                    >
+                      {isDone ? '✓ Concluído' : '• Pendente'}
+                    </span>
+                    <RewardConfigDialog
+                      missaoId={m.id}
+                      missaoTitulo={m.titulo}
+                      existingReward={recompensasMap[m.id]}
+                      onSaved={loadMissoes}
+                      trigger={recompensasMap[m.id] ? 'edit' : 'add'}
+                    />
+                  </div>
 
                   <Button
                     onClick={() => startSprint(m)}
-                    className="bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5"
+                    className="bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 shrink-0"
                   >
                     <Play className="w-3.5 h-3.5 fill-white" />
                     <span>{isDone ? 'Refazer Sprint' : 'Iniciar Sprint'}</span>

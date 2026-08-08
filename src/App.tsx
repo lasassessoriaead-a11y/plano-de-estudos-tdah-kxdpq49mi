@@ -11,6 +11,7 @@ import MissaoHoje from './pages/MissaoHoje'
 import PlanoEstudos from './pages/PlanoEstudos'
 import BancoErros from './pages/BancoErros'
 import Chat from './pages/Chat'
+import Recompensas from './pages/Recompensas'
 import Login from './pages/Login'
 import Cadastro from './pages/Cadastro'
 import NotFound from './pages/NotFound'
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/plano" element={<PlanoEstudos />} />
               <Route path="/erros" element={<BancoErros />} />
               <Route path="/chat" element={<Chat />} />
+              <Route path="/recompensas" element={<Recompensas />} />
             </Route>
           </Route>
 

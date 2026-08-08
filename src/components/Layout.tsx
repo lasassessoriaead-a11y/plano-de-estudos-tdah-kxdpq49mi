@@ -10,6 +10,7 @@ import {
   Flame,
   Star,
   Trophy,
+  Gift,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState, useEffect } from 'react'
@@ -28,6 +29,7 @@ const navItems = [
   { label: 'Missão de Hoje', path: '/missao', icon: Target },
   { label: 'Plano de Estudos', path: '/plano', icon: BookOpenCheck },
   { label: 'Banco de Erros', path: '/erros', icon: AlertCircle },
+  { label: 'Recompensas', path: '/recompensas', icon: Gift },
   { label: 'Chat', path: '/chat', icon: MessageSquare },
 ]
 

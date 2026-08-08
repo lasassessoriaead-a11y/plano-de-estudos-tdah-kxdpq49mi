@@ -7,6 +7,7 @@ import { getQuestoesRevisao, QuestaoRecord } from '@/services/questoes'
 import { getMaterias, MateriaRecord } from '@/services/materias'
 import { SubjectBadge } from '@/components/SubjectBadge'
 import { Confetti } from '@/components/Confetti'
+import { WalletCard } from '@/components/WalletCard'
 import {
   Target,
   Flame,
@@ -278,6 +279,9 @@ export default function Index() {
           </div>
         </div>
       </div>
+
+      {/* Wallet / Recompensas */}
+      <WalletCard />
 
       {/* Grid Inferior: Progresso por Matéria + Banco de Erros Atalho */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

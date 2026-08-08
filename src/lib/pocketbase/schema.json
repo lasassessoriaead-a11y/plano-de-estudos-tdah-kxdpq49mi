@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-08T15:09:29.650Z",
+  "generatedAt": "2026-08-08T15:16:18.839Z",
   "collections": [
     {
       "name": "users",
@@ -531,6 +531,78 @@
       "indexes": [
         "CREATE INDEX idx_dicas_vestibular ON dicas (vestibular)",
         "CREATE INDEX idx_dicas_materia ON dicas (materia_id)"
+      ]
+    },
+    {
+      "name": "recompensas",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "view": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "create": "@request.auth.id != '' && @request.body.usuario_id = @request.auth.id",
+        "update": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "delete": "@request.auth.id != '' && usuario_id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "usuario_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "missao_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "missoes"
+        },
+        {
+          "name": "titulo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "tipo",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["dinheiro", "outro"]
+        },
+        {
+          "name": "valor",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["disponivel", "resgatada"]
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_recompensas_usuario ON recompensas (usuario_id)",
+        "CREATE INDEX idx_recompensas_missao ON recompensas (missao_id)",
+        "CREATE INDEX idx_recompensas_status ON recompensas (status)"
       ]
     }
   ]
