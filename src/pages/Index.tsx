@@ -1,173 +1,177 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { getMissoesData, MissaoRecord } from '@/services/missoes'
-import { getMaterias, MateriaRecord } from '@/services/materias'
 import { useAuth } from '@/hooks/use-auth'
 import { useRealtime } from '@/hooks/use-realtime'
 import { Button } from '@/components/ui/button'
-import {
-  Target,
-  Play,
-  CheckCircle2,
-  Clock,
-  Flame,
-  Star,
-  BookOpenCheck,
-  ArrowRight,
-} from 'lucide-react'
+import { SubjectBadge } from '@/components/SubjectBadge'
+import { Target, Flame, Star, Play, CheckCircle2, Clock, TrendingUp } from 'lucide-react'
 
 export default function Index() {
   const { user } = useAuth()
   const [missoes, setMissoes] = useState<MissaoRecord[]>([])
-  const [materias, setMaterias] = useState<MateriaRecord[]>([])
-  const [xp, setXp] = useState<number>(() =>
-    parseInt(localStorage.getItem('tdah_med_xp') || '250', 10),
-  )
-  const [streak, setStreak] = useState<number>(() =>
-    parseInt(localStorage.getItem('tdah_med_streak') || '4', 10),
-  )
-
   const hoje = new Date().toISOString().split('T')[0]
 
-  const loadData = async () => {
+  const loadMissoes = async () => {
     try {
-      const [mList, matList] = await Promise.all([getMissoesData(hoje), getMaterias()])
-      setMissoes(mList)
-      setMaterias(matList)
+      const data = await getMissoesData(hoje)
+      setMissoes(data)
     } catch (err) {
       console.error(err)
     }
   }
 
   useEffect(() => {
-    loadData()
+    loadMissoes()
   }, [])
+  useRealtime('missoes', () => loadMissoes())
 
-  useEffect(() => {
-    const handleStorage = () => {
-      setXp(parseInt(localStorage.getItem('tdah_med_xp') || '250', 10))
-      setStreak(parseInt(localStorage.getItem('tdah_med_streak') || '4', 10))
-    }
-    window.addEventListener('storage', handleStorage)
-    return () => window.removeEventListener('storage', handleStorage)
-  }, [])
+  const xp = parseInt(localStorage.getItem('tdah_med_xp') || '250', 10)
+  const streak = parseInt(localStorage.getItem('tdah_med_streak') || '4', 10)
 
-  useRealtime('missoes', () => {
-    loadData()
-  })
-
-  const concluidas = missoes.filter((m) => m.status === 'concluida').length
-  const pendentes = missoes.filter((m) => m.status !== 'concluida').length
-  const progresso = missoes.length > 0 ? Math.round((concluidas / missoes.length) * 100) : 0
+  const concluidas = missoes.filter((m) => m.status === 'concluida')
+  const pendentes = missoes.filter((m) => m.status !== 'concluida')
+  const proximaMissao = pendentes[0]
+  const progresso = missoes.length > 0 ? (concluidas.length / missoes.length) * 100 : 0
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-          Olá, {user?.name || 'Luis Gustavo'}! 👋
+          Olá, {user?.name?.split(' ')[0] || 'Estudante'}! 👋
         </h1>
-        <p className="text-xs text-slate-500 font-medium">
-          Pronto para mais um dia de sprints focados?
+        <p className="text-sm text-slate-600 font-medium mt-1">
+          {new Date().toLocaleDateString('pt-BR', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+          })}
         </p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-amber-100 text-amber-700">
-              <Flame className="w-4 h-4 fill-amber-500" />
-            </div>
-            <span className="text-[11px] font-bold text-slate-500 uppercase">Sequência</span>
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle">
+          <div className="flex items-center gap-2 mb-1">
+            <Flame className="w-5 h-5 text-amber-500 fill-amber-500" />
+            <span className="text-xs font-bold text-slate-600">Sequência</span>
           </div>
-          <p className="text-2xl font-black text-slate-900">{streak} dias</p>
+          <p className="text-xl font-black text-slate-900">{streak} dias</p>
         </div>
-
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-violet-100 text-violet-700">
-              <Star className="w-4 h-4 fill-violet-500" />
-            </div>
-            <span className="text-[11px] font-bold text-slate-500 uppercase">XP Total</span>
+        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle">
+          <div className="flex items-center gap-2 mb-1">
+            <Star className="w-5 h-5 text-violet-600 fill-violet-500" />
+            <span className="text-xs font-bold text-slate-600">Pontos XP</span>
           </div>
-          <p className="text-2xl font-black text-slate-900">{xp}</p>
+          <p className="text-xl font-black text-slate-900">{xp} XP</p>
         </div>
-
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-            <span className="text-[11px] font-bold text-slate-500 uppercase">Concluídas</span>
+        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle">
+          <div className="flex items-center gap-2 mb-1">
+            <Target className="w-5 h-5 text-emerald-600" />
+            <span className="text-xs font-bold text-slate-600">Concluídas</span>
           </div>
-          <p className="text-2xl font-black text-slate-900">{concluidas}</p>
-        </div>
-
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-amber-100 text-amber-700">
-              <Clock className="w-4 h-4" />
-            </div>
-            <span className="text-[11px] font-bold text-slate-500 uppercase">Pendentes</span>
-          </div>
-          <p className="text-2xl font-black text-slate-900">{pendentes}</p>
+          <p className="text-xl font-black text-slate-900">
+            {concluidas.length}/{missoes.length}
+          </p>
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-subtle space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-violet-600" />
-            <h2 className="text-base font-extrabold text-slate-900">Progresso de Hoje</h2>
+      {proximaMissao ? (
+        <div className="bg-gradient-to-br from-violet-600 to-violet-700 p-6 rounded-2xl shadow-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="w-5 h-5 text-violet-200" />
+            <span className="text-sm font-bold text-violet-100">Próxima Missão</span>
           </div>
-          <Link to="/missao">
-            <Button
-              size="sm"
-              className="bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5"
-            >
-              <Play className="w-3.5 h-3.5 fill-white" />
-              Ir para Missões
+          <h2 className="text-lg font-black text-white mb-1">{proximaMissao.titulo}</h2>
+          <p className="text-sm text-violet-200 mb-4">
+            Sprint focado de 15 minutos para avançar no plano
+          </p>
+          <Link to={`/missao?id=${proximaMissao.id}`}>
+            <Button className="bg-white text-violet-700 hover:bg-violet-50 font-bold text-sm rounded-xl">
+              <Play className="w-4 h-4 fill-violet-700 mr-1.5" />
+              Iniciar Sprint
             </Button>
           </Link>
         </div>
+      ) : missoes.length > 0 ? (
+        <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl">
+          <div className="flex items-center gap-2 mb-2">
+            <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+            <h2 className="text-lg font-black text-emerald-800">Tudo concluído hoje! 🎉</h2>
+          </div>
+          <p className="text-sm text-emerald-700 font-medium">
+            Você completou todas as missões de hoje. Volte amanhã para novos desafios!
+          </p>
+        </div>
+      ) : null}
 
-        <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
-          <div
-            className="bg-gradient-to-r from-violet-600 to-amber-500 h-full rounded-full transition-all duration-500"
-            style={{ width: `${progresso}%` }}
-          />
+      {missoes.length > 0 && (
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-bold text-slate-700">Progresso de Hoje</span>
+            <span className="text-sm font-extrabold text-violet-600">{Math.round(progresso)}%</span>
+          </div>
+          <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
+            <div
+              className="bg-gradient-to-r from-violet-600 to-amber-500 h-full rounded-full transition-all duration-500"
+              style={{ width: `${progresso}%` }}
+            />
+          </div>
         </div>
-        <p className="text-xs text-slate-500 font-medium">
-          {concluidas} de {missoes.length} missões concluídas ({progresso}%)
-        </p>
-      </div>
+      )}
 
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-subtle space-y-3">
-        <div className="flex items-center gap-2">
-          <BookOpenCheck className="w-5 h-5 text-violet-600" />
-          <h2 className="text-base font-extrabold text-slate-900">Matérias em Foco</h2>
+      {missoes.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-bold text-slate-700">Missões de Hoje</h3>
+          {missoes.map((m, idx) => {
+            const isDone = m.status === 'concluida'
+            const mat = m.expand?.pildes_id?.expand?.topico_id?.expand?.materia_id
+            return (
+              <Link
+                key={m.id}
+                to={`/missao?id=${m.id}`}
+                className="block bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle hover:shadow-elevation transition-all"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isDone ? 'bg-emerald-100' : 'bg-violet-100'}`}
+                    >
+                      {isDone ? (
+                        <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                      ) : (
+                        <span className="text-sm font-black text-violet-600">{idx + 1}</span>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p
+                        className={`text-sm font-bold truncate ${isDone ? 'text-slate-500' : 'text-slate-900'}`}
+                      >
+                        {m.titulo}
+                      </p>
+                      {mat && (
+                        <div className="mt-1">
+                          <SubjectBadge nome={mat.nome} cor={mat.cor} icone={mat.icone} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    {isDone ? (
+                      <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+                        Concluída
+                      </span>
+                    ) : (
+                      <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> 15 min
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            )
+          })}
         </div>
-        <div className="flex flex-wrap gap-2">
-          {materias.slice(0, 6).map((m) => (
-            <Link
-              key={m.id}
-              to="/plano"
-              className="px-3 py-2 rounded-xl border border-slate-200 hover:border-violet-300 hover:bg-violet-50 transition-colors flex items-center gap-2"
-            >
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: m.cor || '#8B5CF6' }}
-              />
-              <span className="text-xs font-bold text-slate-700">{m.nome}</span>
-            </Link>
-          ))}
-        </div>
-        <Link
-          to="/plano"
-          className="text-xs font-bold text-violet-600 hover:underline flex items-center gap-1 pt-1"
-        >
-          Ver plano completo <ArrowRight className="w-3 h-3" />
-        </Link>
-      </div>
+      )}
     </div>
   )
 }

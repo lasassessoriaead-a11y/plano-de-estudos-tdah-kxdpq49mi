@@ -65,7 +65,7 @@ export default function Layout() {
             <h1 className="font-extrabold text-base tracking-tight text-slate-900">
               Missão Medicina
             </h1>
-            <p className="text-[11px] font-semibold text-violet-600 uppercase tracking-wider">
+            <p className="text-xs font-semibold text-violet-600 uppercase tracking-wider">
               Sprints TDAH
             </p>
           </div>
@@ -86,7 +86,7 @@ export default function Layout() {
                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
                 )}
               >
-                <Icon className={cn('w-5 h-5', isActive ? 'text-violet-600' : 'text-slate-400')} />
+                <Icon className={cn('w-5 h-5', isActive ? 'text-violet-600' : 'text-slate-500')} />
                 <span>{item.label}</span>
               </Link>
             )
@@ -109,7 +109,7 @@ export default function Layout() {
                 style={{ width: `${Math.min((xp % 500) / 5, 100)}%` }}
               />
             </div>
-            <p className="text-[10px] text-slate-500 text-center font-medium">
+            <p className="text-xs text-slate-600 text-center font-medium">
               Nível Medicina • Próximo marco em {500 - (xp % 500)} XP
             </p>
           </div>
@@ -183,10 +183,10 @@ export default function Layout() {
               key={item.path}
               to={item.path}
               className={cn(
-                'flex flex-col items-center gap-1 px-2 py-1.5 rounded-xl transition-all duration-200 text-[9px] font-bold',
+                'flex flex-col items-center gap-1 px-2 py-1.5 rounded-xl transition-all duration-200 text-xs font-bold',
                 isActive
                   ? 'text-violet-700 scale-105 -translate-y-0.5'
-                  : 'text-slate-400 hover:text-slate-600',
+                  : 'text-slate-500 hover:text-slate-700',
               )}
             >
               <div

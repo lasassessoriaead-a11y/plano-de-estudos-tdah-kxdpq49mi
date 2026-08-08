@@ -15,7 +15,11 @@ export const getProgresso = async (missaoId?: string): Promise<ProgressoRecord[]
 }
 
 export const saveProgresso = async (data: Partial<ProgressoRecord>): Promise<ProgressoRecord> => {
-  return pb.collection('progresso').create<ProgressoRecord>(data)
+  const usuario_id = pb.authStore.record?.id
+  return pb.collection('progresso').create<ProgressoRecord>({
+    ...data,
+    usuario_id: data.usuario_id || usuario_id,
+  })
 }
 
 export const updateProgresso = async (
