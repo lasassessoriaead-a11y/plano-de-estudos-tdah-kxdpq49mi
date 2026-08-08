@@ -5,7 +5,7 @@ import { SubjectBadge } from '@/components/SubjectBadge'
 import { BreathingCircle } from '@/components/BreathingCircle'
 import { MissaoRecord, updateMissao } from '@/services/missoes'
 import { upsertProgresso, getProgressoByMissao } from '@/services/progresso'
-import { getQuestoes } from '@/services/questoes'
+import { getQuestoes, updateQuestao } from '@/services/questoes'
 import { cn } from '@/lib/utils'
 
 type Fase = 'teoria' | 'pratica' | 'pausa'
@@ -27,8 +27,10 @@ export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProp
   const [fasesConcluidas, setFasesConcluidas] = useState<Set<Fase>>(new Set())
   const [loading, setLoading] = useState(false)
   const [questoes, setQuestoes] = useState<any[]>([])
-  const [respostaSelecionada, setRespostaSelecionada] = useState<number | null>(null)
-  const [respostaConfirmada, setRespostaConfirmada] = useState(false)
+  const [respostasSelecionadas, setRespostasSelecionadas] = useState<Record<string, number | null>>(
+    {},
+  )
+  const [respostasConfirmadas, setRespostasConfirmadas] = useState<Record<string, boolean>>({})
   const loadingRef = useRef(false)
 
   const pilde = missao.expand?.pildes_id
@@ -65,6 +67,26 @@ export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProp
     }
   }, [missao.id, missao.status])
 
+  const handleConfirmarResposta = useCallback(
+    async (questaoId: string) => {
+      const selecionada = respostasSelecionadas[questaoId]
+      if (selecionada === null || selecionada === undefined) return
+      const questao = questoes.find((q) => q.id === questaoId)
+      if (!questao) return
+
+      const acertou = selecionada === questao.gabarito
+      const novoStatus = acertou ? 'acertou' : 'errou'
+
+      try {
+        await updateQuestao(questaoId, { status: novoStatus })
+        setRespostasConfirmadas((prev) => ({ ...prev, [questaoId]: true }))
+      } catch (err) {
+        console.error('Erro ao registrar resposta:', err)
+      }
+    },
+    [respostasSelecionadas, questoes],
+  )
+
   const handleAvancar = useCallback(async () => {
     if (loadingRef.current) return
     loadingRef.current = true
@@ -77,8 +99,8 @@ export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProp
       const idxAtual = FASES.indexOf(faseAtual)
       if (idxAtual < FASES.length - 1) {
         setFaseAtual(FASES[idxAtual + 1])
-        setRespostaSelecionada(null)
-        setRespostaConfirmada(false)
+        setRespostasSelecionadas({})
+        setRespostasConfirmadas({})
       } else {
         await updateMissao(missao.id, { status: 'concluida' })
         onComplete()
@@ -93,7 +115,9 @@ export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProp
 
   const idxAtual = FASES.indexOf(faseAtual)
   const isUltimaFase = idxAtual === FASES.length - 1
-  const podeAvancar = faseAtual !== 'pratica' || questoes.length === 0 || respostaConfirmada
+  const todasConfirmadas =
+    questoes.length === 0 || questoes.every((q) => respostasConfirmadas[q.id])
+  const podeAvancar = faseAtual !== 'pratica' || todasConfirmadas
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
@@ -192,6 +216,8 @@ export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProp
                           }
                         })()
                       : []
+                  const selecionada = respostasSelecionadas[q.id] ?? null
+                  const confirmada = respostasConfirmadas[q.id] ?? false
                   return (
                     <div key={q.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
                       <p className="text-sm font-bold text-slate-900 mb-3">
@@ -201,17 +227,20 @@ export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProp
                         {alts.map((alt, ai) => (
                           <button
                             key={ai}
-                            onClick={() => !respostaConfirmada && setRespostaSelecionada(ai)}
+                            onClick={() =>
+                              !confirmada &&
+                              setRespostasSelecionadas((prev) => ({ ...prev, [q.id]: ai }))
+                            }
                             className={cn(
                               'w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all',
-                              respostaSelecionada === ai
+                              selecionada === ai
                                 ? 'border-violet-500 bg-violet-50 text-slate-900'
                                 : 'border-slate-200 bg-white text-slate-800 hover:border-violet-300',
-                              respostaConfirmada &&
+                              confirmada &&
                                 ai === q.gabarito &&
                                 'border-emerald-500 bg-emerald-50 text-emerald-800',
-                              respostaConfirmada &&
-                                ai === respostaSelecionada &&
+                              confirmada &&
+                                ai === selecionada &&
                                 ai !== q.gabarito &&
                                 'border-red-500 bg-red-50 text-red-800',
                             )}
@@ -223,10 +252,21 @@ export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProp
                           </button>
                         ))}
                       </div>
-                      {respostaConfirmada && q.explicacao && (
+                      {confirmada && q.explicacao && (
                         <div className="mt-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
                           <p className="text-sm font-bold text-blue-900 mb-1">Explicação:</p>
                           <p className="text-sm text-blue-800">{q.explicacao}</p>
+                        </div>
+                      )}
+                      {!confirmada && (
+                        <div className="mt-3 flex justify-end">
+                          <Button
+                            onClick={() => handleConfirmarResposta(q.id)}
+                            disabled={selecionada === null}
+                            className="bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl"
+                          >
+                            Confirmar resposta
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -241,17 +281,6 @@ export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProp
                   <p className="text-sm text-slate-700 mt-1">
                     Você pode avançar para a próxima fase.
                   </p>
-                </div>
-              )}
-              {faseAtual === 'pratica' && questoes.length > 0 && !respostaConfirmada && (
-                <div className="flex justify-end">
-                  <Button
-                    onClick={() => setRespostaConfirmada(true)}
-                    disabled={respostaSelecionada === null}
-                    className="bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl"
-                  >
-                    Confirmar resposta
-                  </Button>
                 </div>
               )}
             </div>
