@@ -163,7 +163,7 @@ export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProp
                 <h3 className="text-base font-extrabold text-slate-900">Teoria</h3>
               </div>
               <div
-                className="prose prose-sm max-w-none prose-headings:text-slate-900 prose-p:text-slate-800 prose-li:text-slate-800 prose-strong:text-slate-900"
+                className="prose prose-sm max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-p:text-slate-900 prose-li:text-slate-900 prose-strong:text-slate-900 prose-strong:font-bold"
                 dangerouslySetInnerHTML={{
                   __html:
                     pilde?.conteudo_teorico ||
@@ -180,7 +180,18 @@ export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProp
               </div>
               {questoes.length > 0 ? (
                 questoes.map((q, qi) => {
-                  const alts: string[] = Array.isArray(q.alternativas) ? q.alternativas : []
+                  const altRaw = q.alternativas
+                  const alts: string[] = Array.isArray(altRaw)
+                    ? altRaw
+                    : typeof altRaw === 'string'
+                      ? (() => {
+                          try {
+                            return JSON.parse(altRaw) as string[]
+                          } catch {
+                            return []
+                          }
+                        })()
+                      : []
                   return (
                     <div key={q.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
                       <p className="text-sm font-bold text-slate-900 mb-3">
