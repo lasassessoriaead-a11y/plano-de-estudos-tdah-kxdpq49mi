@@ -34,6 +34,14 @@ export const getQuestoesRevisao = async (): Promise<QuestaoRecord[]> => {
   })
 }
 
+export const getQuestoesByPilde = async (pildeId: string): Promise<QuestaoRecord[]> => {
+  return pb.collection('questoes').getFullList<QuestaoRecord>({
+    filter: `pildes_id="${pildeId}"`,
+    expand: 'materia_id,pildes_id',
+    sort: '-created',
+  })
+}
+
 export const updateQuestao = async (
   id: string,
   data: Partial<QuestaoRecord>,
