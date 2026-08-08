@@ -55,7 +55,7 @@ export default function MissaoHoje() {
 
       <div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">Missão de Hoje</h1>
-        <p className="text-sm text-slate-600 font-medium mt-1">
+        <p className="text-sm text-slate-800 font-medium mt-1">
           Sprints focados de 15 minutos (Teoria + Prática + Pausa)
         </p>
       </div>
@@ -65,7 +65,7 @@ export default function MissaoHoje() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Target className="w-5 h-5 text-violet-600" />
-              <span className="text-sm font-bold text-slate-700">Progresso do Dia</span>
+              <span className="text-sm font-bold text-slate-900">Progresso do Dia</span>
             </div>
             <span className="text-sm font-extrabold text-violet-600">
               {concluidas.length} de {missoes.length} concluídas
@@ -78,7 +78,7 @@ export default function MissaoHoje() {
             />
           </div>
           {proximaMissao && (
-            <p className="text-sm text-slate-600 font-medium mt-3">
+            <p className="text-sm text-slate-800 font-medium mt-3">
               Próxima missão:{' '}
               <span className="font-bold text-slate-900">{proximaMissao.titulo}</span>
             </p>
@@ -100,7 +100,7 @@ export default function MissaoHoje() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black ${isDone ? 'bg-emerald-100 text-emerald-700' : isNext ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-600'}`}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black ${isDone ? 'bg-emerald-100 text-emerald-700' : isNext ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-800'}`}
                     >
                       {isDone ? <CheckCircle2 className="w-5 h-5" /> : idx + 1}
                     </div>
@@ -116,7 +116,7 @@ export default function MissaoHoje() {
               </div>
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                 <span
-                  className={`text-sm font-bold ${isDone ? 'text-emerald-600' : 'text-slate-600'}`}
+                  className={`text-sm font-bold ${isDone ? 'text-emerald-700' : 'text-slate-800'}`}
                 >
                   {isDone ? '✓ Concluído' : '• Pendente'}
                 </span>
@@ -135,8 +135,8 @@ export default function MissaoHoje() {
 
       {missoes.length === 0 && (
         <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center">
-          <Clock className="w-8 h-8 text-slate-400 mx-auto mb-3" />
-          <p className="text-sm text-slate-600 font-medium">Nenhuma missão programada para hoje.</p>
+          <Clock className="w-8 h-8 text-slate-600 mx-auto mb-3" />
+          <p className="text-sm text-slate-800 font-medium">Nenhuma missão programada para hoje.</p>
         </div>
       )}
     </div>
