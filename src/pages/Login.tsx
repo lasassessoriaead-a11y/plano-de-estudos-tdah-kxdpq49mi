@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
+import pb from '@/lib/pocketbase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Target, Lock, Mail, ArrowRight, Sparkles } from 'lucide-react'
+import { Target, Lock, Mail, ArrowRight, Sparkles, UserCog } from 'lucide-react'
 import { extractFieldErrors, getErrorMessage } from '@/lib/pocketbase/errors'
 
 export default function Login() {
@@ -30,12 +31,18 @@ export default function Login() {
       setFieldErrors(extractFieldErrors(error))
       setErrorMsg(getErrorMessage(error) || 'Email ou senha inválidos.')
     } else {
-      navigate('/')
+      const role = pb.authStore.record?.['role'] as string
+      navigate(role === 'responsavel' ? '/responsavel' : '/')
     }
   }
 
-  const fillDemo = () => {
+  const fillStudentDemo = () => {
     setEmail('luka2510@hotmail.com')
+    setPassword('Skip@Pass')
+  }
+
+  const fillResponsavelDemo = () => {
+    setEmail('responsavel@skip.app')
     setPassword('Skip@Pass')
   }
 
@@ -116,11 +123,20 @@ export default function Login() {
         <div className="pt-2 border-t border-slate-100 flex flex-col gap-3">
           <button
             type="button"
-            onClick={fillDemo}
+            onClick={fillStudentDemo}
             className="w-full py-2 px-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors"
           >
             <Sparkles className="w-4 h-4 text-amber-600" />
-            <span>Usar conta de demonstração (luka2510@hotmail.com)</span>
+            <span>Entrar como Aluno (Luis Gustavo)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={fillResponsavelDemo}
+            className="w-full py-2 px-3 bg-violet-50 hover:bg-violet-100 border border-violet-200 text-violet-800 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors"
+          >
+            <UserCog className="w-4 h-4 text-violet-600" />
+            <span>Entrar como Responsável</span>
           </button>
 
           <p className="text-xs text-center text-slate-500 font-medium">

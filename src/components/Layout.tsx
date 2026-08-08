@@ -9,8 +9,6 @@ import {
   LogOut,
   Flame,
   Star,
-  Trophy,
-  Gift,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState, useEffect } from 'react'
@@ -29,7 +27,6 @@ const navItems = [
   { label: 'Missão de Hoje', path: '/missao', icon: Target },
   { label: 'Plano de Estudos', path: '/plano', icon: BookOpenCheck },
   { label: 'Banco de Erros', path: '/erros', icon: AlertCircle },
-  { label: 'Recompensas', path: '/recompensas', icon: Gift },
   { label: 'Chat', path: '/chat', icon: MessageSquare },
 ]
 
@@ -59,9 +56,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row text-slate-900 font-sans">
-      {/* Desktop Sidebar (>=1025px) */}
       <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 bg-white border-r border-slate-200 z-30 shadow-subtle">
-        {/* Logo */}
         <div className="p-6 border-b border-slate-100 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 to-amber-500 flex items-center justify-center text-white shadow-md">
             <Target className="w-6 h-6 animate-pulse" />
@@ -76,7 +71,6 @@ export default function Layout() {
           </div>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon
@@ -99,7 +93,6 @@ export default function Layout() {
           })}
         </nav>
 
-        {/* Bottom Stat Card */}
         <div className="p-4 border-t border-slate-100">
           <div className="p-3.5 rounded-xl bg-gradient-to-br from-violet-50 to-amber-50 border border-violet-100 space-y-2">
             <div className="flex items-center justify-between text-xs font-bold text-slate-700">
@@ -123,9 +116,7 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Main Content Area */}
       <div className="flex-1 lg:pl-64 flex flex-col min-h-screen">
-        {/* Topbar */}
         <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-3">
             <div className="lg:hidden w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center text-white font-bold text-sm">
@@ -135,19 +126,16 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Streak Badge */}
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-extrabold shadow-2xs">
               <Flame className="w-4 h-4 text-amber-500 fill-amber-500 animate-bounce" />
               <span>{streak}d</span>
             </div>
 
-            {/* XP Badge */}
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-50 border border-violet-200 text-violet-700 text-xs font-extrabold shadow-2xs">
               <Star className="w-4 h-4 text-violet-600 fill-violet-500" />
               <span>{xp} XP</span>
             </div>
 
-            {/* User Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 outline-none focus:ring-2 focus:ring-violet-500 rounded-full">
@@ -181,13 +169,11 @@ export default function Layout() {
           </div>
         </header>
 
-        {/* Page Content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8 animate-fade-in max-w-7xl mx-auto w-full">
           <Outlet />
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation (0-1024px) */}
       <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-2 py-2 flex items-center justify-around z-30 shadow-lg">
         {navItems.map((item) => {
           const Icon = item.icon
@@ -197,7 +183,7 @@ export default function Layout() {
               key={item.path}
               to={item.path}
               className={cn(
-                'flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all duration-200 text-[10px] font-bold',
+                'flex flex-col items-center gap-1 px-2 py-1.5 rounded-xl transition-all duration-200 text-[9px] font-bold',
                 isActive
                   ? 'text-violet-700 scale-105 -translate-y-0.5'
                   : 'text-slate-400 hover:text-slate-600',

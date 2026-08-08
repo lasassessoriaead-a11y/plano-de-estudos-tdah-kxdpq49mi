@@ -1,64 +1,37 @@
 import { useState, useEffect } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { getMissoesData, updateMissao, MissaoRecord } from '@/services/missoes'
 import { getQuestoes, updateQuestao, QuestaoRecord } from '@/services/questoes'
 import { saveProgresso } from '@/services/progresso'
 import { SubjectBadge } from '@/components/SubjectBadge'
 import { BreathingCircle } from '@/components/BreathingCircle'
-import { RewardConfigDialog } from '@/components/RewardConfigDialog'
-import { getRecompensas, RecompensaRecord } from '@/services/recompensas'
 import { Button } from '@/components/ui/button'
-import {
-  Target,
-  Play,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  ArrowRight,
-  X,
-  RotateCcw,
-  Sparkles,
-  Gift,
-} from 'lucide-react'
+import { useRealtime } from '@/hooks/use-realtime'
+import { Target, Play, CheckCircle2, XCircle, Clock, X, Sparkles } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 export default function MissaoHoje() {
   const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
   const { toast } = useToast()
 
   const [missoes, setMissoes] = useState<MissaoRecord[]>([])
   const [activeMissao, setActiveMissao] = useState<MissaoRecord | null>(null)
 
-  // Modos do Sprint
   const [sprintMode, setSprintMode] = useState<boolean>(false)
   const [fase, setPhase] = useState<'teoria' | 'pratica' | 'pausa'>('teoria')
-  const [timeLeft, setTimeLeft] = useState<number>(600) // 10 min teoria
+  const [timeLeft, setTimeLeft] = useState<number>(600)
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false)
 
-  // Prática
   const [questoes, setQuestoes] = useState<QuestaoRecord[]>([])
   const [currentQIdx, setCurrentQIdx] = useState<number>(0)
   const [selectedAlt, setSelectedAlt] = useState<number | null>(null)
   const [answered, setAnswered] = useState<boolean>(false)
-  const [recompensasMap, setRecompensasMap] = useState<Record<string, RecompensaRecord>>({})
 
   const hoje = new Date().toISOString().split('T')[0]
 
   const loadMissoes = async () => {
     const data = await getMissoesData(hoje)
     setMissoes(data)
-
-    try {
-      const recList = await getRecompensas()
-      const rMap: Record<string, RecompensaRecord> = {}
-      recList.forEach((r) => {
-        rMap[r.missao_id] = r
-      })
-      setRecompensasMap(rMap)
-    } catch (err) {
-      console.error(err)
-    }
 
     const urlId = searchParams.get('id')
     if (urlId) {
@@ -73,7 +46,14 @@ export default function MissaoHoje() {
     loadMissoes()
   }, [])
 
-  // Timer Effect
+  useRealtime('missoes', () => {
+    loadMissoes()
+  })
+
+  useRealtime('progresso', () => {
+    loadMissoes()
+  })
+
   useEffect(() => {
     let timer: any
     if (sprintMode && isTimerRunning && timeLeft > 0) {
@@ -88,10 +68,9 @@ export default function MissaoHoje() {
     setActiveMissao(m)
     setSprintMode(true)
     setPhase('teoria')
-    setTimeLeft(600) // 10 min
+    setTimeLeft(600)
     setIsTimerRunning(true)
 
-    // Buscar questões para a prática
     try {
       const qList = await getQuestoes()
       setQuestoes(qList.slice(0, 3))
@@ -116,7 +95,7 @@ export default function MissaoHoje() {
       })
       toast({ title: 'Teoria concluída! 🚀', description: 'Iniciando Prática de 5 min.' })
       setPhase('pratica')
-      setTimeLeft(300) // 5 min
+      setTimeLeft(300)
       setIsTimerRunning(true)
     } else if (fase === 'pratica') {
       await saveProgresso({
@@ -127,7 +106,7 @@ export default function MissaoHoje() {
       })
       toast({ title: 'Prática concluída! 🧠', description: 'Hora da Pausa Ativa de 3 min.' })
       setPhase('pausa')
-      setTimeLeft(180) // 3 min
+      setTimeLeft(180)
       setIsTimerRunning(true)
     } else if (fase === 'pausa') {
       await saveProgresso({
@@ -138,7 +117,6 @@ export default function MissaoHoje() {
       })
       await updateMissao(activeMissao.id, { status: 'concluida' })
 
-      // Conceder XP
       const currentXp = parseInt(localStorage.getItem('tdah_med_xp') || '250', 10)
       localStorage.setItem('tdah_med_xp', String(currentXp + 50))
       window.dispatchEvent(new Event('storage'))
@@ -194,10 +172,8 @@ export default function MissaoHoje() {
 
   return (
     <div className="space-y-6">
-      {/* Sprint Overlay (Modo Foco em Tela Cheia) */}
       {sprintMode && activeMissao && (
         <div className="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-lg flex flex-col text-white p-4 sm:p-6 overflow-y-auto">
-          {/* Header do Sprint */}
           <div className="max-w-4xl mx-auto w-full flex items-center justify-between border-b border-slate-800 pb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-violet-600 flex items-center justify-center font-extrabold text-white">
@@ -219,7 +195,6 @@ export default function MissaoHoje() {
             </button>
           </div>
 
-          {/* Stepper de Fases */}
           <div className="max-w-4xl mx-auto w-full py-4 grid grid-cols-3 gap-2">
             {[
               { id: 'teoria', label: '1. Teoria (10m)' },
@@ -242,7 +217,6 @@ export default function MissaoHoje() {
             })}
           </div>
 
-          {/* Timer Display */}
           <div className="max-w-4xl mx-auto w-full flex items-center justify-between bg-slate-800/80 p-4 rounded-2xl border border-slate-700 mb-6">
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-amber-400 animate-pulse" />
@@ -269,9 +243,7 @@ export default function MissaoHoje() {
             </div>
           </div>
 
-          {/* Conteúdo da Fase */}
           <div className="max-w-4xl mx-auto w-full flex-1 bg-slate-800 p-6 rounded-2xl border border-slate-700 overflow-y-auto">
-            {/* FASE 1: TEORIA */}
             {fase === 'teoria' && (
               <div className="space-y-4">
                 <div className="p-3 bg-violet-950/60 border border-violet-700/50 rounded-xl text-xs text-violet-200 font-semibold flex items-center gap-2">
@@ -290,7 +262,6 @@ export default function MissaoHoje() {
               </div>
             )}
 
-            {/* FASE 2: PRÁTICA */}
             {fase === 'pratica' && (
               <div className="space-y-6">
                 {questoes.length === 0 ? (
@@ -383,13 +354,11 @@ export default function MissaoHoje() {
               </div>
             )}
 
-            {/* FASE 3: PAUSA */}
             {fase === 'pausa' && <BreathingCircle />}
           </div>
         </div>
       )}
 
-      {/* Tela de Listagem de Missões */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -417,30 +386,15 @@ export default function MissaoHoje() {
                   </div>
 
                   <h3 className="text-base font-extrabold text-slate-900">{m.titulo}</h3>
-                  {recompensasMap[m.id] && (
-                    <div className="flex items-center gap-1.5 text-xs text-violet-600 font-bold">
-                      <Gift className="w-3.5 h-3.5" />
-                      <span className="truncate">{recompensasMap[m.id].titulo}</span>
-                    </div>
-                  )}
                 </div>
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span
-                      className={`text-xs font-extrabold ${
-                        isDone ? 'text-emerald-600' : 'text-amber-600'
-                      }`}
-                    >
-                      {isDone ? '✓ Concluído' : '• Pendente'}
-                    </span>
-                    <RewardConfigDialog
-                      missaoId={m.id}
-                      missaoTitulo={m.titulo}
-                      existingReward={recompensasMap[m.id]}
-                      onSaved={loadMissoes}
-                      trigger={recompensasMap[m.id] ? 'edit' : 'add'}
-                    />
-                  </div>
+                  <span
+                    className={`text-xs font-extrabold ${
+                      isDone ? 'text-emerald-600' : 'text-amber-600'
+                    }`}
+                  >
+                    {isDone ? '✓ Concluído' : '• Pendente'}
+                  </span>
 
                   <Button
                     onClick={() => startSprint(m)}
