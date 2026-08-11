@@ -56,14 +56,16 @@ cronAdd('gerar_conteudo', '0 * * * *', () => {
         '\nFormato: ' +
         formato +
         '\n\n' +
-        'Gere conteúdo teórico em HTML e 4 questões de múltipla escolha.\n\n' +
+        'Gere conteúdo teórico em HTML e 8 questões de múltipla escolha.\n\n' +
         'Regras do conteúdo:\n' +
         '- Use tags HTML: h3, h4, p, ul, li, strong\n' +
         '- Use divs de destaque: <div class="p-3 my-2 bg-amber-50 rounded-lg border border-amber-300"> para dicas, <div class="p-3 my-2 bg-emerald-50 rounded-lg border border-emerald-300"> para resumos\n' +
         '- SEMPRE use texto escuro: text-slate-900, text-amber-900, text-emerald-900\n' +
-        '- Frases curtas e simples (máx 2 linhas cada)\n' +
+        '- Frases curtas e simples (máx 1 linha cada)\n' +
+        '- Use linguagem fácil e direta, sem termos complexos\n' +
+        '- Explique como se fosse para um iniciante\n' +
         '- Máximo 400 palavras\n\n' +
-        'Regras das questões:\n- 4 questões com 4 alternativas\n- Inclua explicação para cada questão\n- Nível: vestibular\n\n' +
+        'Regras das questões:\n- 8 questões com 4 alternativas\n- Inclua explicação simples para cada questão\n- Nível: vestibular\n\n' +
         'Responda APENAS com JSON válido (sem markdown):\n' +
         '{"conteudo_teorico":"<h3>...</h3>","questoes":[{"enunciado":"...","alternativas":["...","...","...","..."],"gabarito":0,"explicacao":"..."}]}'
 

@@ -1,20 +1,21 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { X, BookOpen, PenTool, Coffee, ChevronRight, Loader2, CheckCircle2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useState, useEffect } from 'react'
+import { X, ChevronRight, ChevronLeft, BookOpen, Brain, Coffee } from 'lucide-react'
+import { getPilde, type PildeRecord } from '@/services/pildes'
+import { getQuestoesByPilde, updateQuestao, type QuestaoRecord } from '@/services/questoes'
+import { upsertProgresso } from '@/services/progresso'
+import { updateMissao, type MissaoRecord } from '@/services/missoes'
 import { SubjectBadge } from '@/components/SubjectBadge'
-import { BreathingCircle } from '@/components/BreathingCircle'
-import { MissaoRecord, updateMissao } from '@/services/missoes'
-import { upsertProgresso, getProgressoByMissao } from '@/services/progresso'
-import { getQuestoes, updateQuestao } from '@/services/questoes'
+import { QuestaoCard } from '@/components/QuestaoCard'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-type Fase = 'teoria' | 'pratica' | 'pausa'
-const FASES: Fase[] = ['teoria', 'pratica', 'pausa']
-const FASE_INFO: Record<Fase, { label: string; icon: typeof BookOpen }> = {
-  teoria: { label: 'Teoria', icon: BookOpen },
-  pratica: { label: 'Prática', icon: PenTool },
-  pausa: { label: 'Pausa', icon: Coffee },
-}
+type Phase = 'teoria' | 'pratica' | 'pausa'
+
+const phases: { key: Phase; label: string; icon: typeof BookOpen }[] = [
+  { key: 'teoria', label: 'Teoria', icon: BookOpen },
+  { key: 'pratica', label: 'Prática', icon: Brain },
+  { key: 'pausa', label: 'Pausa', icon: Coffee },
+]
 
 interface SprintOverlayProps {
   missao: MissaoRecord
@@ -23,312 +24,163 @@ interface SprintOverlayProps {
 }
 
 export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProps) {
-  const [faseAtual, setFaseAtual] = useState<Fase>('teoria')
-  const [fasesConcluidas, setFasesConcluidas] = useState<Set<Fase>>(new Set())
-  const [loading, setLoading] = useState(false)
-  const [questoes, setQuestoes] = useState<any[]>([])
-  const [respostasSelecionadas, setRespostasSelecionadas] = useState<Record<string, number | null>>(
-    {},
-  )
-  const [respostasConfirmadas, setRespostasConfirmadas] = useState<Record<string, boolean>>({})
-  const loadingRef = useRef(false)
-
-  const pilde = missao.expand?.pildes_id
-  const mat = (pilde as any)?.expand?.topico_id?.expand?.materia_id
+  const [phase, setPhase] = useState<Phase>('teoria')
+  const [pilde, setPilde] = useState<PildeRecord | null>(null)
+  const [questoes, setQuestoes] = useState<QuestaoRecord[]>([])
+  const [answers, setAnswers] = useState<Record<string, number>>({})
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const loadInitial = async () => {
+    const loadData = async () => {
       try {
-        const [progresso, questoesData] = await Promise.all([
-          getProgressoByMissao(missao.id),
-          getQuestoes(),
-        ])
-        const concluidas = new Set<Fase>()
-        progresso.forEach((p) => {
-          if (p.etapa && p.concluido) concluidas.add(p.etapa as Fase)
-        })
-        setFasesConcluidas(concluidas)
-        const primeiraFase = FASES.find((f) => !concluidas.has(f)) || 'pausa'
-        setFaseAtual(primeiraFase)
-        const pildeQuestoes = (questoesData as any[]).filter(
-          (q) => q.pildes_id === missao.pildes_id,
-        )
-        setQuestoes(pildeQuestoes)
+        const p = await getPilde(missao.pildes_id)
+        setPilde(p)
+        const qs = await getQuestoesByPilde(missao.pildes_id)
+        setQuestoes(qs)
       } catch (err) {
-        console.error('Erro ao carregar progresso:', err)
+        console.error(err)
+      } finally {
+        setLoading(false)
       }
     }
-    loadInitial()
-  }, [missao.id, missao.pildes_id])
+    loadData()
+  }, [missao.pildes_id])
 
-  useEffect(() => {
-    if (missao.status === 'pendente') {
-      updateMissao(missao.id, { status: 'em_andamento' }).catch(() => {})
-    }
-  }, [missao.id, missao.status])
-
-  const handleConfirmarResposta = useCallback(
-    async (questaoId: string) => {
-      const selecionada = respostasSelecionadas[questaoId]
-      if (selecionada === null || selecionada === undefined) return
-      const questao = questoes.find((q) => q.id === questaoId)
-      if (!questao) return
-
-      const acertou = selecionada === questao.gabarito
-      const novoStatus = acertou ? 'acertou' : 'errou'
-
-      try {
-        await updateQuestao(questaoId, { status: novoStatus })
-        setRespostasConfirmadas((prev) => ({ ...prev, [questaoId]: true }))
-      } catch (err) {
-        console.error('Erro ao registrar resposta:', err)
-      }
-    },
-    [respostasSelecionadas, questoes],
-  )
-
-  const handleAvancar = useCallback(async () => {
-    if (loadingRef.current) return
-    loadingRef.current = true
-    setLoading(true)
+  const handleAnswer = async (questaoId: string, selected: number, gabarito: number) => {
+    setAnswers((prev) => ({ ...prev, [questaoId]: selected }))
     try {
-      await upsertProgresso(missao.id, faseAtual)
-      const novasConcluidas = new Set(fasesConcluidas)
-      novasConcluidas.add(faseAtual)
-      setFasesConcluidas(novasConcluidas)
-      const idxAtual = FASES.indexOf(faseAtual)
-      if (idxAtual < FASES.length - 1) {
-        setFaseAtual(FASES[idxAtual + 1])
-        setRespostasSelecionadas({})
-        setRespostasConfirmadas({})
-      } else {
-        await updateMissao(missao.id, { status: 'concluida' })
-        onComplete()
-      }
+      await updateQuestao(questaoId, { status: selected === gabarito ? 'acertou' : 'errou' })
     } catch (err) {
-      console.error('Erro ao avançar:', err)
-    } finally {
-      loadingRef.current = false
-      setLoading(false)
+      console.error(err)
     }
-  }, [faseAtual, fasesConcluidas, missao.id, onComplete])
+  }
 
-  const idxAtual = FASES.indexOf(faseAtual)
-  const isUltimaFase = idxAtual === FASES.length - 1
-  const todasConfirmadas =
-    questoes.length === 0 || questoes.every((q) => respostasConfirmadas[q.id])
-  const podeAvancar = faseAtual !== 'pratica' || todasConfirmadas
+  const allAnswered = questoes.length > 0 && questoes.every((q) => answers[q.id] !== undefined)
+  const mat = pilde?.expand?.topico_id?.expand?.materia_id
+  const phaseIdx = phases.findIndex((p) => p.key === phase)
+
+  const handleAdvance = async () => {
+    if (phase === 'teoria') {
+      await upsertProgresso(missao.id, 'teoria')
+      setPhase('pratica')
+    } else if (phase === 'pratica') {
+      await upsertProgresso(missao.id, 'pratica')
+      setPhase('pausa')
+    } else {
+      await upsertProgresso(missao.id, 'pausa')
+      await updateMissao(missao.id, { status: 'concluida' })
+      onComplete()
+    }
+  }
+
+  const handleBack = () => {
+    if (phase === 'pratica') setPhase('teoria')
+    else if (phase === 'pausa') setPhase('pratica')
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between p-5 border-b border-slate-200">
-          <div className="flex items-center gap-3">
-            {mat && <SubjectBadge nome={mat.nome} cor={mat.cor} icone={mat.icone} />}
-            <div>
-              <h2 className="text-lg font-extrabold text-slate-900">{missao.titulo}</h2>
-              <p className="text-sm font-semibold text-slate-800">
-                {pilde?.titulo || 'Sprint de Estudo'}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl hover:bg-slate-100 transition-colors text-slate-700"
-            aria-label="Fechar"
-          >
-            <X className="w-5 h-5" />
-          </button>
+    <div className="fixed inset-0 z-50 bg-slate-50 overflow-y-auto">
+      <div className="sticky top-0 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between z-10">
+        <div className="flex items-center gap-3 min-w-0">
+          {mat && <SubjectBadge nome={mat.nome} cor={mat.cor} icone={mat.icone} />}
+          <h2 className="text-sm font-extrabold text-slate-900 truncate">{missao.titulo}</h2>
         </div>
+        <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-100 shrink-0">
+          <X className="w-5 h-5 text-slate-600" />
+        </button>
+      </div>
 
-        <div className="flex items-center gap-2 px-5 py-3 bg-slate-50 border-b border-slate-200">
-          {FASES.map((fase, idx) => {
-            const Info = FASE_INFO[fase]
-            const Icon = Info.icon
-            const isConcluida = fasesConcluidas.has(fase)
-            const isAtual = fase === faseAtual
-            return (
-              <div key={fase} className="flex items-center gap-2 flex-1">
-                <div
-                  className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition-all',
-                    isConcluida && 'bg-emerald-100 text-emerald-700',
-                    isAtual &&
-                      !isConcluida &&
-                      'bg-violet-100 text-violet-700 ring-2 ring-violet-300',
-                    !isConcluida && !isAtual && 'bg-slate-100 text-slate-600',
-                  )}
-                >
-                  {isConcluida ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  ) : (
-                    <Icon className="w-4 h-4" />
-                  )}
-                  <span>{Info.label}</span>
-                </div>
-                {idx < FASES.length - 1 && (
-                  <div
-                    className={cn(
-                      'h-0.5 flex-1 rounded-full',
-                      isConcluida ? 'bg-emerald-400' : 'bg-slate-300',
-                    )}
-                  />
-                )}
-              </div>
-            )
-          })}
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-5">
-          {faseAtual === 'teoria' && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-2">
-                <BookOpen className="w-5 h-5 text-violet-600" />
-                <h3 className="text-base font-extrabold text-slate-900">Teoria</h3>
-              </div>
+      <div className="flex items-center gap-1 px-4 py-3 bg-white border-b border-slate-100">
+        {phases.map((p, i) => {
+          const isActive = p.key === phase
+          const isPast = phaseIdx > i
+          return (
+            <div key={p.key} className="flex items-center gap-1">
               <div
-                className="prose prose-sm max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-p:text-slate-900 prose-li:text-slate-900 prose-strong:text-slate-900 prose-strong:font-bold"
-                dangerouslySetInnerHTML={{
-                  __html:
-                    pilde?.conteudo_teorico ||
-                    '<p class="text-slate-800">Conteúdo teórico não disponível para esta missão.</p>',
-                }}
-              />
-            </div>
-          )}
-          {faseAtual === 'pratica' && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-2">
-                <PenTool className="w-5 h-5 text-amber-600" />
-                <h3 className="text-base font-extrabold text-slate-900">Prática</h3>
+                className={cn(
+                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold',
+                  isActive && 'bg-violet-600 text-white',
+                  isPast && 'bg-emerald-100 text-emerald-700',
+                  !isActive && !isPast && 'bg-slate-100 text-slate-500',
+                )}
+              >
+                <p.icon className="w-3.5 h-3.5" />
+                {p.label}
               </div>
-              {questoes.length > 0 ? (
-                questoes.map((q, qi) => {
-                  const altRaw = q.alternativas
-                  const alts: string[] = Array.isArray(altRaw)
-                    ? altRaw
-                    : typeof altRaw === 'string'
-                      ? (() => {
-                          try {
-                            return JSON.parse(altRaw) as string[]
-                          } catch {
-                            return []
-                          }
-                        })()
-                      : []
-                  const selecionada = respostasSelecionadas[q.id] ?? null
-                  const confirmada = respostasConfirmadas[q.id] ?? false
-                  return (
-                    <div key={q.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
-                      <p className="text-sm font-bold text-slate-900 mb-3">
-                        {qi + 1}. {q.enunciado}
-                      </p>
-                      <div className="space-y-2">
-                        {alts.map((alt, ai) => (
-                          <button
-                            key={ai}
-                            onClick={() =>
-                              !confirmada &&
-                              setRespostasSelecionadas((prev) => ({ ...prev, [q.id]: ai }))
-                            }
-                            className={cn(
-                              'w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all',
-                              selecionada === ai
-                                ? 'border-violet-500 bg-violet-50 text-slate-900'
-                                : 'border-slate-200 bg-white text-slate-800 hover:border-violet-300',
-                              confirmada &&
-                                ai === q.gabarito &&
-                                'border-emerald-500 bg-emerald-50 text-emerald-800',
-                              confirmada &&
-                                ai === selecionada &&
-                                ai !== q.gabarito &&
-                                'border-red-500 bg-red-50 text-red-800',
-                            )}
-                          >
-                            <span className="font-extrabold mr-2 text-slate-900">
-                              {String.fromCharCode(65 + ai)})
-                            </span>
-                            {alt}
-                          </button>
-                        ))}
-                      </div>
-                      {confirmada && q.explicacao && (
-                        <div className="mt-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
-                          <p className="text-sm font-bold text-blue-900 mb-1">Explicação:</p>
-                          <p className="text-sm text-blue-800">{q.explicacao}</p>
-                        </div>
-                      )}
-                      {!confirmada && (
-                        <div className="mt-3 flex justify-end">
-                          <Button
-                            onClick={() => handleConfirmarResposta(q.id)}
-                            disabled={selecionada === null}
-                            className="bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl"
-                          >
-                            Confirmar resposta
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })
-              ) : (
-                <div className="bg-slate-50 rounded-2xl p-6 text-center border border-slate-200">
-                  <PenTool className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-                  <p className="text-sm font-bold text-slate-900">
-                    Nenhuma questão disponível para esta missão.
-                  </p>
-                  <p className="text-sm text-slate-700 mt-1">
-                    Você pode avançar para a próxima fase.
-                  </p>
-                </div>
+              {i < 2 && (
+                <div className={cn('w-4 h-0.5', isPast ? 'bg-emerald-300' : 'bg-slate-200')} />
               )}
             </div>
-          )}
-          {faseAtual === 'pausa' && (
-            <div className="space-y-4 flex flex-col items-center text-center py-6">
-              <div className="flex items-center gap-2 mb-2">
-                <Coffee className="w-5 h-5 text-emerald-600" />
-                <h3 className="text-base font-extrabold text-slate-900">Pausa</h3>
-              </div>
-              <p className="text-sm font-semibold text-slate-800 max-w-md">
-                Respire fundo e descanse por alguns minutos. Você está quase lá!
-              </p>
-              <BreathingCircle />
-            </div>
-          )}
-        </div>
+          )
+        })}
+      </div>
 
-        <div className="p-5 border-t border-slate-200 bg-white">
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-bold text-slate-900">
-              Fase {idxAtual + 1} de {FASES.length}:{' '}
-              <span className="text-slate-900">{FASE_INFO[faseAtual].label}</span>
-            </div>
-            <Button
-              onClick={handleAvancar}
-              disabled={loading || !podeAvancar}
-              className={cn(
-                'font-bold rounded-xl flex items-center gap-2 px-6 text-white transition-all',
-                isUltimaFase
-                  ? 'bg-emerald-600 hover:bg-emerald-700'
-                  : 'bg-violet-600 hover:bg-violet-700',
-                (loading || !podeAvancar) && 'opacity-60 cursor-not-allowed',
-              )}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Salvando...
-                </>
-              ) : (
-                <>
-                  {isUltimaFase ? 'Concluir Missão' : 'Avançar'}{' '}
-                  <ChevronRight className="w-4 h-4" />
-                </>
-              )}
-            </Button>
+      <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
+        {loading ? (
+          <div className="text-center py-20">
+            <p className="text-sm text-slate-500 font-medium">Carregando...</p>
           </div>
+        ) : phase === 'teoria' ? (
+          <div
+            className="prose prose-sm max-w-none prose-headings:text-slate-900 prose-p:text-slate-700 prose-li:text-slate-700 prose-strong:text-slate-900"
+            dangerouslySetInnerHTML={{
+              __html: pilde?.conteudo_teorico || '<p>Conteúdo não disponível.</p>',
+            }}
+          />
+        ) : phase === 'pratica' ? (
+          <div className="space-y-4">
+            <p className="text-sm font-bold text-slate-900">
+              {questoes.length} questões — responda todas para avançar
+            </p>
+            {questoes.map((q, i) => (
+              <div key={q.id}>
+                <p className="text-xs font-bold text-slate-400 mb-1.5">Questão {i + 1}</p>
+                <QuestaoCard questao={q} selectedAnswer={answers[q.id]} onAnswer={handleAnswer} />
+              </div>
+            ))}
+            {questoes.length === 0 && (
+              <p className="text-sm text-slate-500 font-medium text-center py-8">
+                Nenhuma questão disponível.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-16 space-y-4">
+            <Coffee className="w-12 h-12 text-violet-400 mx-auto" />
+            <h3 className="text-lg font-extrabold text-slate-900">Hora da Pausa!</h3>
+            <p className="text-sm text-slate-600 font-medium">
+              Respire fundo. Você merece este descanso.
+            </p>
+            <div className="bg-violet-50 rounded-2xl p-6 max-w-xs mx-auto">
+              <p className="text-sm text-violet-900 font-medium">Respire 3 vezes:</p>
+              <p className="text-xs text-violet-700 mt-1">
+                Inspire (4s) → Segure (4s) → Expire (4s)
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-3 flex items-center justify-between gap-3">
+        <div>
+          {phase !== 'teoria' && (
+            <Button
+              onClick={handleBack}
+              variant="outline"
+              className="font-bold text-sm rounded-xl flex items-center gap-1.5"
+            >
+              <ChevronLeft className="w-4 h-4" /> Voltar
+            </Button>
+          )}
         </div>
+        <Button
+          onClick={handleAdvance}
+          disabled={phase === 'pratica' && !allAnswered}
+          className="bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm rounded-xl flex items-center gap-1.5"
+        >
+          {phase === 'pausa' ? 'Concluir Sprint' : 'Avançar'}
+          <ChevronRight className="w-4 h-4" />
+        </Button>
       </div>
     </div>
   )
