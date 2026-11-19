@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-19T02:33:08.092Z",
+  "generatedAt": "2026-11-19T02:41:19.080Z",
   "collections": [
     {
       "name": "users",
@@ -1861,6 +1861,19 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "incluir_redacao",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "tema_id",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "sim_redacao_temas"
         }
       ],
       "indexes": [
@@ -1949,6 +1962,24 @@
           "type": "number",
           "required": false,
           "system": false
+        },
+        {
+          "name": "redacao_texto",
+          "type": "editor",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "redacao_avaliacao",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "redacao_nota_real",
+          "type": "number",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": [
@@ -1956,6 +1987,59 @@
         "CREATE INDEX idx_simtent_simulado ON simulado_tentativas (simulado_id)",
         "CREATE INDEX idx_simtent_usuario_created ON simulado_tentativas (usuario_id, created DESC)"
       ]
+    },
+    {
+      "name": "sim_redacao_temas",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "view": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "create": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "update": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "delete": "@request.auth.id != '' && usuario_id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "usuario_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "titulo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "textos_motivadores",
+          "type": "json",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "instrucoes",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE INDEX idx_simredtemas_usuario ON sim_redacao_temas (usuario_id)"]
     }
   ]
 }

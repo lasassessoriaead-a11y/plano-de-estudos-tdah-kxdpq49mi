@@ -59,6 +59,7 @@ import {
   parseQuestoesIds,
   sortearQuestoes,
   formatarTempo,
+  getPrimeiroTemaRedacao,
 } from '@/services/simulados'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
@@ -67,7 +68,7 @@ const PRESETS = [
   {
     tipo: 'enem_dia1' as const,
     titulo: 'ENEM — Primeiro Dia',
-    desc: '45 Linguagens + 45 Ciências Humanas (90 questões)',
+    desc: '45 Linguagens + 45 Ciências Humanas (90 questões) + Redação',
     icone: FileText,
     cor: 'text-violet-600',
     bg: 'bg-violet-100',
@@ -199,14 +200,29 @@ export default function Simulados() {
         }
         ids.push(...qs.map((q) => q.id))
       }
+      // só o 1º dia completo inclui a redação
+      let incluirRedacao = false
+      let temaRedacaoId: string | undefined
+      if (tipo === 'enem_dia1') {
+        const tema = await getPrimeiroTemaRedacao()
+        if (tema) {
+          incluirRedacao = true
+          temaRedacaoId = tema.id
+        }
+      }
       const sim = await createSimulado({
         titulo: tipo === 'enem_dia1' ? 'ENEM — Primeiro Dia' : 'ENEM — Segundo Dia',
         tipo,
         config: {},
         questoesIds: ids,
         duracaoMin: 270,
+        incluirRedacao,
+        temaRedacaoId,
       })
-      toast({ title: 'Simulado criado!', description: 'Boa prova!' })
+      toast({
+        title: 'Simulado criado!',
+        description: incluirRedacao ? 'Boa prova — e boa redação!' : 'Boa prova!',
+      })
       window.location.href = `/simulados/prova/${sim.id}`
     } catch {
       toast({

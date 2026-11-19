@@ -49,9 +49,45 @@ export interface SimuladoRecord {
   config_json: SimuladoConfig | string
   questoes_ids: string[] | string
   duracao_min: number
+  incluir_redacao?: boolean
+  tema_id?: string
   created: string
   updated: string
 }
+
+// ---------- Redação ----------
+
+export interface TemaRedacaoRecord {
+  id: string
+  usuario_id: string
+  titulo: string
+  textos_motivadores: string[] | string
+  instrucoes?: string
+  created: string
+  updated: string
+}
+
+export interface RedacaoCompetencia {
+  codigo: number
+  nota: number
+  pontos_fortes: string
+  a_melhorar: string
+}
+
+export interface RedacaoAvaliacao {
+  competencias: RedacaoCompetencia[]
+  soma?: number
+  comentario_geral?: string
+  avaliado_em?: string
+}
+
+export const COMPETENCIAS_REDACAO: { codigo: number; label: string }[] = [
+  { codigo: 1, label: 'C1 — Domínio da escrita formal' },
+  { codigo: 2, label: 'C2 — Compreensão do tema e repertório' },
+  { codigo: 3, label: 'C3 — Seleção e organização dos argumentos' },
+  { codigo: 4, label: 'C4 — Coesão e mecanismos linguísticos' },
+  { codigo: 5, label: 'C5 — Proposta de intervenção' },
+]
 
 export interface TentativaRecord {
   id: string
@@ -62,6 +98,9 @@ export interface TentativaRecord {
   marcadas_json?: string[] | string
   tempo_usado_seg?: number
   pct_acerto?: number
+  redacao_texto?: string
+  redacao_avaliacao?: RedacaoAvaliacao | string
+  redacao_nota_real?: number | null
   iniciado_em?: string
   finalizado_em?: string
   created: string
@@ -102,6 +141,18 @@ export const parseQuestoesIds = (s: SimuladoRecord): string[] =>
 
 export const parseConfig = (s: SimuladoRecord): SimuladoConfig =>
   parseJson<SimuladoConfig>(s.config_json as never, {})
+
+export const parseTemaMotivadores = (t: TemaRedacaoRecord): string[] =>
+  parseJson<string[]>(t.textos_motivadores as never, [])
+
+export const parseAvaliacaoRedacao = (t: TentativaRecord): RedacaoAvaliacao | null => {
+  const av = parseJson<RedacaoAvaliacao | null>(t.redacao_avaliacao as never, null)
+  if (!av || !Array.isArray(av.competencias) || av.competencias.length !== 5) return null
+  return av
+}
+
+export const somaAvaliacaoRedacao = (av: RedacaoAvaliacao): number =>
+  av.competencias.reduce((acc, c) => acc + (Number(c.nota) || 0), 0)
 
 // ---------- Banco de questões ----------
 
@@ -173,6 +224,8 @@ export interface CriarSimuladoData {
   config: SimuladoConfig
   questoesIds: string[]
   duracaoMin: number
+  incluirRedacao?: boolean
+  temaRedacaoId?: string
 }
 
 export const createSimulado = async (data: CriarSimuladoData): Promise<SimuladoRecord> => {
@@ -184,6 +237,8 @@ export const createSimulado = async (data: CriarSimuladoData): Promise<SimuladoR
     config_json: JSON.stringify(data.config),
     questoes_ids: JSON.stringify(data.questoesIds),
     duracao_min: data.duracaoMin,
+    incluir_redacao: Boolean(data.incluirRedacao),
+    tema_id: data.temaRedacaoId,
   })
 }
 
@@ -195,6 +250,19 @@ export const listSimulados = async (): Promise<SimuladoRecord[]> =>
 
 export const deleteSimulado = async (id: string): Promise<void> => {
   await pb.collection('simulados').delete(id)
+}
+
+// ---------- Temas de redação ----------
+
+export const getTemaRedacao = async (id: string): Promise<TemaRedacaoRecord> =>
+  pb.collection('sim_redacao_temas').getOne<TemaRedacaoRecord>(id)
+
+// Primeiro tema disponível do aluno (usado no preset do 1º dia)
+export const getPrimeiroTemaRedacao = async (): Promise<TemaRedacaoRecord | null> => {
+  const recs = await pb
+    .collection('sim_redacao_temas')
+    .getList<TemaRedacaoRecord>(1, 1, { sort: '-created' })
+  return recs.items[0] ?? null
 }
 
 // ---------- Tentativas ----------
@@ -245,6 +313,8 @@ export interface SalvarTentativaData {
   status?: TentativaRecord['status']
   finalizadoEm?: string
   pctAcerto?: number
+  redacaoTexto?: string
+  notaRedacaoReal?: number
 }
 
 export const salvarTentativa = async (
@@ -258,6 +328,8 @@ export const salvarTentativa = async (
   if (data.status) body.status = data.status
   if (data.finalizadoEm) body.finalizado_em = data.finalizadoEm
   if (data.pctAcerto !== undefined) body.pct_acerto = Math.round(data.pctAcerto)
+  if (data.redacaoTexto !== undefined) body.redacao_texto = data.redacaoTexto
+  if (data.notaRedacaoReal !== undefined) body.redacao_nota_real = Math.round(data.notaRedacaoReal)
   return pb.collection('simulado_tentativas').update<TentativaRecord>(id, body)
 }
 
@@ -375,4 +447,25 @@ export const formatarTempo = (seg: number): string => {
   const s = seg % 60
   if (h > 0) return `${h}h ${String(m).padStart(2, '0')}min`
   return `${m}min ${String(s).padStart(2, '0')}s`
+}
+
+// ---------- Avaliação da redação (IA no backend) ----------
+
+export const avaliarRedacao = async (tentativaId: string): Promise<RedacaoAvaliacao> => {
+  const res = await fetch(`${import.meta.env.VITE_POCKETBASE_URL}/backend/v1/redacao-ia`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: pb.authStore.token,
+    },
+    body: JSON.stringify({ tentativa_id: tentativaId }),
+  })
+  const json = (await res.json().catch(() => null)) as {
+    data?: RedacaoAvaliacao
+    error?: string
+  } | null
+  if (!res.ok || !json?.data) {
+    throw new Error(json?.error || 'Falha na avaliação da redação')
+  }
+  return json.data
 }

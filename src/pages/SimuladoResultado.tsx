@@ -4,6 +4,7 @@ import { ArrowLeft, CheckCircle2, Clock, Flag, Target, TrendingUp, XCircle } fro
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import RedacaoResultadoCard from '@/components/simulado/RedacaoResultadoCard'
 import {
   AREA_LABEL,
   calcularResultado,
@@ -11,11 +12,13 @@ import {
   getQuestoesByIds,
   getSimulado,
   getTentativa,
+  getTemaRedacao,
   listTentativas,
   parseAlternativas,
+  parseAvaliacaoRedacao,
   parseQuestoesIds,
   parseRespostas,
-  type ResultadoArea,
+  somaAvaliacaoRedacao,
   type SimQuestaoRecord,
   type TentativaRecord,
 } from '@/services/simulados'
@@ -26,6 +29,8 @@ export default function SimuladoResultado() {
   const [simTitulo, setSimTitulo] = useState('')
   const [questoes, setQuestoes] = useState<SimQuestaoRecord[]>([])
   const [anteriores, setAnteriores] = useState<TentativaRecord[]>([])
+  const [simIncluirRedacao, setSimIncluirRedacao] = useState(false)
+  const [temaTitulo, setTemaTitulo] = useState<string | undefined>(undefined)
   const [loading, setLoading] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
 
@@ -40,6 +45,15 @@ export default function SimuladoResultado() {
         const sim = await getSimulado(tent.simulado_id)
         if (!mounted) return
         setSimTitulo(sim.titulo)
+        setSimIncluirRedacao(Boolean(sim.incluir_redacao))
+        if (sim.incluir_redacao && sim.tema_id) {
+          try {
+            const tema = await getTemaRedacao(sim.tema_id)
+            if (mounted) setTemaTitulo(tema?.titulo)
+          } catch {
+            /* tema ausente — segue sem título */
+          }
+        }
         const qs = await getQuestoesByIds(parseQuestoesIds(sim))
         if (!mounted) return
         setQuestoes(qs)
@@ -89,6 +103,11 @@ export default function SimuladoResultado() {
     ? Math.round(pctAnteriores.reduce((a, b) => a + b, 0) / pctAnteriores.length)
     : null
   const delta = mediaAnterior !== null ? resultado.pctAcerto - mediaAnterior : null
+
+  // redações anteriores (para a evolução)
+  const redacoesAnteriores = anteriores
+    .filter((t) => t.redacao_texto && t.redacao_texto.trim())
+    .slice(0, 10)
 
   const resumo: { label: string; valor: string | number; cor: string; icon: typeof Target }[] = [
     { label: 'Total de questões', valor: resultado.total, cor: 'text-slate-700', icon: Target },
@@ -175,7 +194,7 @@ export default function SimuladoResultado() {
           <CardTitle className="text-sm font-bold">Desempenho por área</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {resultado.porArea.map((a: ResultadoArea) => (
+          {resultado.porArea.map((a) => (
             <div key={a.area}>
               <div className="flex items-center justify-between text-sm font-bold mb-1">
                 <span className="text-slate-800">{AREA_LABEL[a.area]}</span>
@@ -206,6 +225,62 @@ export default function SimuladoResultado() {
           )}
         </CardContent>
       </Card>
+
+      {/* redação */}
+      {simIncluirRedacao && (
+        <RedacaoResultadoCard
+          tentativa={tentativa}
+          temaTitulo={temaTitulo}
+          onAtualizada={(t) => setTentativa(t)}
+        />
+      )}
+
+      {/* histórico das redações */}
+      {simIncluirRedacao && redacoesAnteriores.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-bold">
+              Evolução da redação (estimativas não oficiais anteriores)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {redacoesAnteriores.map((t) => {
+              const av = parseAvaliacaoRedacao(t)
+              const somaRed = av ? somaAvaliacaoRedacao(av) : null
+              return (
+                <div
+                  key={t.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-slate-800 truncate">
+                      {t.expand?.simulado_id?.titulo ?? 'Simulado'}
+                    </p>
+                    <p className="text-[11px] text-slate-500 font-semibold">
+                      {t.created ? new Date(t.created).toLocaleDateString('pt-BR') : '—'}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    {somaRed !== null ? (
+                      <p className="text-sm font-black text-emerald-700">
+                        {somaRed}
+                        <span className="text-xs text-slate-400">/1000</span>
+                      </p>
+                    ) : (
+                      <p className="text-xs font-semibold text-slate-400">Não avaliada</p>
+                    )}
+                    {t.redacao_nota_real != null && (
+                      <p className="text-[11px] font-bold text-violet-700">
+                        real: {t.redacao_nota_real}/1000
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </CardContent>
+        </Card>
+      )}
 
       {/* gabarito comentado */}
       <Card>
