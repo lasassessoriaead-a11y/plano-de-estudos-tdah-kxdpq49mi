@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-19T01:53:25.058Z",
+  "generatedAt": "2026-11-19T02:14:00.446Z",
   "collections": [
     {
       "name": "users",
@@ -1453,6 +1453,227 @@
         }
       ],
       "indexes": []
+    },
+    {
+      "name": "mind_maps",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "view": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "create": "@request.auth.id != '' && @request.body.usuario_id = @request.auth.id",
+        "update": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "delete": "@request.auth.id != '' && usuario_id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "usuario_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "titulo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "assunto",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "materia_id",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "materias"
+        },
+        {
+          "name": "nivel_detalhe",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["resumido", "intermediario", "aprofundado"]
+        },
+        {
+          "name": "nivel_conhecimento",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["basico", "intermediario", "avancado"]
+        },
+        {
+          "name": "foco",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["enem", "vestibular"]
+        },
+        {
+          "name": "data_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "favorito",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "origem",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["ia", "documento", "manual"]
+        },
+        {
+          "name": "flashcards_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "questoes_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_mind_maps_usuario ON mind_maps (usuario_id)",
+        "CREATE INDEX idx_mind_maps_usuario_updated ON mind_maps (usuario_id, updated DESC)",
+        "CREATE INDEX idx_mind_maps_materia ON mind_maps (materia_id)"
+      ]
+    },
+    {
+      "name": "mind_map_nodes",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "view": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "create": "@request.auth.id != '' && @request.body.usuario_id = @request.auth.id",
+        "update": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "delete": "@request.auth.id != '' && usuario_id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "usuario_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "mind_map_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "mind_maps"
+        },
+        {
+          "name": "node_key",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "rotulo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "detalhe",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "nivel_profundidade",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "pos_x",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "pos_y",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cor",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "colapsado",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ordem",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "pai_key",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "links_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_mmnode_map_key ON mind_map_nodes (mind_map_id, node_key)",
+        "CREATE INDEX idx_mmnode_usuario ON mind_map_nodes (usuario_id)"
+      ]
     }
   ]
 }

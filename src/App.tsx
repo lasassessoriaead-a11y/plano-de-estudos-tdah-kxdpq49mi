@@ -7,6 +7,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 import Layout from './components/Layout'
 
 import Index from './pages/Index'
+import MapasMentais from './pages/MapasMentais'
 import MissaoHoje from './pages/MissaoHoje'
 import PlanoEstudos from './pages/PlanoEstudos'
 import BancoErros from './pages/BancoErros'
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/plano" element={<PlanoEstudos />} />
               <Route path="/erros" element={<BancoErros />} />
               <Route path="/chat" element={<Chat />} />
+              <Route path="/mapas" element={<MapasMentais />} />
               <Route path="/notificacoes" element={<Notificacoes />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
             </Route>

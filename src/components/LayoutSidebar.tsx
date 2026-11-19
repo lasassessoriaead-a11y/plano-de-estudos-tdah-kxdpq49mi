@@ -6,6 +6,7 @@ import {
   Layers,
   XCircle,
   MessageCircle,
+  Brain,
   Settings,
   PanelLeftClose,
   PanelLeftOpen,
@@ -25,6 +26,7 @@ export const navItems: SidebarNavItem[] = [
   { to: '/missao', label: 'Missão de Hoje', icon: CalendarDays },
   { to: '/plano', label: 'Plano de Estudos', icon: Layers },
   { to: '/erros', label: 'Banco de Erros', icon: XCircle },
+  { to: '/mapas', label: 'Mapas Mentais', icon: Brain },
   { to: '/chat', label: 'Chat', icon: MessageCircle },
   { to: '/configuracoes', label: 'Configurações', icon: Settings },
 ]
