@@ -14,6 +14,12 @@ export interface MissaoRecord {
   }
 }
 
+export const getMissoes = async (): Promise<MissaoRecord[]> => {
+  return pb.collection('missoes').getFullList<MissaoRecord>({
+    sort: '-data,ordem',
+  })
+}
+
 export const getMissoesData = async (dataStr: string): Promise<MissaoRecord[]> => {
   return pb.collection('missoes').getFullList<MissaoRecord>({
     filter: `data~"${dataStr}"`,

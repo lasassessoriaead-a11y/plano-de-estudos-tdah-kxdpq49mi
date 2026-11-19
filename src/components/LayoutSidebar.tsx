@@ -6,7 +6,6 @@ import {
   Layers,
   XCircle,
   MessageCircle,
-  Gift,
   Settings,
   PanelLeftClose,
   PanelLeftOpen,
@@ -25,10 +24,8 @@ export const navItems: SidebarNavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/missao', label: 'Missão de Hoje', icon: CalendarDays },
   { to: '/plano', label: 'Plano de Estudos', icon: Layers },
-  { to: '/mpc', label: 'MPC', icon: Layers },
   { to: '/erros', label: 'Banco de Erros', icon: XCircle },
   { to: '/chat', label: 'Chat', icon: MessageCircle },
-  { to: '/recompensas', label: 'Recompensas', icon: Gift },
   { to: '/configuracoes', label: 'Configurações', icon: Settings },
 ]
 

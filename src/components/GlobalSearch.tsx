@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, BookOpen, FolderTree, FileText, X } from 'lucide-react'
-import type { MpcContentRecord } from '@/services/premium'
+import { Search, BookOpen, FolderTree, X } from 'lucide-react'
 
 export interface GlobalSearchData {
   materias: { id: string; nome: string }[]
   topicos: { id: string; nome: string; materia_id: string }[]
-  conteudos: MpcContentRecord[]
 }
 
 interface Props extends GlobalSearchData {}
@@ -19,7 +17,7 @@ interface Hit {
   icon: React.ComponentType<{ className?: string }>
 }
 
-export default function GlobalSearch({ materias, topicos, conteudos }: Props) {
+export default function GlobalSearch({ materias, topicos }: Props) {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
@@ -46,18 +44,8 @@ export default function GlobalSearch({ materias, topicos, conteudos }: Props) {
       if (t.nome.toLowerCase().includes(q))
         out.push({ key: `t-${t.id}`, label: t.nome, sub: 'Tópico', to: '/plano', icon: FolderTree })
     }
-    for (const c of conteudos) {
-      if (c.nome?.toLowerCase().includes(q))
-        out.push({
-          key: `c-${c.id}`,
-          label: c.nome,
-          sub: 'Conteúdo MPC',
-          to: `/mpc?conteudo=${c.id}`,
-          icon: FileText,
-        })
-    }
     return out.slice(0, 8)
-  }, [query, materias, topicos, conteudos])
+  }, [query, materias, topicos])
 
   return (
     <div ref={boxRef} className="relative w-full max-w-xs sm:max-w-sm">

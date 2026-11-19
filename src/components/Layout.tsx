@@ -2,16 +2,10 @@ import { useEffect, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { useTheme } from '@/hooks/use-theme'
-import {
-  getNotifications,
-  getMpcContents,
-  getXpTransactions,
-  type NotificationRecord,
-  type MpcContentRecord,
-} from '@/services/premium'
+import { getNotifications, type NotificationRecord } from '@/services/premium'
 import { getMaterias } from '@/services/materias'
 import { getTopicos } from '@/services/topicos'
-import { PanelLeftClose, PanelLeftOpen, Bell, LogOut, Sun, Moon, Zap } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, Bell, LogOut, Sun, Moon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
@@ -31,10 +25,8 @@ const pageTitle: Record<string, string> = {
   '/dashboard': 'Dashboard',
   '/missao': 'Missão de Hoje',
   '/plano': 'Plano de Estudos',
-  '/mpc': 'MPC',
   '/erros': 'Banco de Erros',
   '/chat': 'Chat',
-  '/recompensas': 'Recompensas',
   '/notificacoes': 'Notificações',
   '/configuracoes': 'Configurações',
 }
@@ -42,7 +34,6 @@ const pageTitle: Record<string, string> = {
 export interface SearchData {
   materias: { id: string; nome: string }[]
   topicos: { id: string; nome: string; materia_id: string }[]
-  conteudos: MpcContentRecord[]
 }
 
 export default function Layout() {
@@ -54,11 +45,9 @@ export default function Layout() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [unread, setUnread] = useState(0)
-  const [xp, setXp] = useState(0)
   const [searchData, setSearchData] = useState<SearchData>({
     materias: [],
     topicos: [],
-    conteudos: [],
   })
 
   // contagem de não-lidas da coleção nova "notifications" (central do estudante)
@@ -81,17 +70,16 @@ export default function Layout() {
     }
   }, [user?.id, location.pathname])
 
-  // dados da busca global (matérias, tópicos, conteúdos do MPC)
+  // dados da busca global (matérias e tópicos)
   useEffect(() => {
     let mounted = true
     ;(async () => {
       try {
-        const [m, t, c] = await Promise.all([getMaterias(), getTopicos(), getMpcContents()])
+        const [m, t] = await Promise.all([getMaterias(), getTopicos()])
         if (!mounted) return
         setSearchData({
           materias: m.map((x) => ({ id: x.id, nome: x.nome })),
           topicos: t.map((x) => ({ id: x.id, nome: x.titulo, materia_id: x.materia_id })),
-          conteudos: c,
         })
       } catch {
         /* busca global fica vazia */
@@ -101,14 +89,6 @@ export default function Layout() {
       mounted = false
     }
   }, [])
-
-  // XP real do banco (calculado no servidor via hooks)
-  useEffect(() => {
-    if (!user?.id) return
-    getXpTransactions(user.id)
-      .then((txs) => setXp(txs.reduce((s, t) => s + (t.quantidade || 0), 0)))
-      .catch(() => {})
-  }, [user?.id, location.pathname])
 
   useEffect(() => {
     setMobileOpen(false)
@@ -175,11 +155,7 @@ export default function Layout() {
 
           <div className="flex-1" />
 
-          <GlobalSearch
-            materias={searchData.materias}
-            topicos={searchData.topicos}
-            conteudos={searchData.conteudos}
-          />
+          <GlobalSearch materias={searchData.materias} topicos={searchData.topicos} />
 
           {/* alternância de tema */}
           <button
@@ -249,13 +225,6 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
-
-      {xp > 0 && (
-        <div className="hidden lg:flex fixed bottom-4 right-4 z-20 items-center gap-1.5 rounded-full bg-card border border-border px-3 py-1.5 text-xs font-bold shadow-subtle">
-          <Zap className="h-3.5 w-3.5 text-amber-500" />
-          {xp} XP
-        </div>
-      )}
     </div>
   )
 }
