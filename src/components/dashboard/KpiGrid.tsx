@@ -3,7 +3,6 @@ import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Flame,
-  Zap,
   Target,
   CheckCircle2,
   Clock,
@@ -15,10 +14,6 @@ import { cn } from '@/lib/utils'
 
 interface KpiGridProps {
   loading?: boolean
-  xpTotal: number
-  nivel: number
-  xpNoNivel: number
-  xpProximoNivel: number
   streakDias: number
   questoesResolvidas: number
   taxaAcerto: number | null
@@ -57,14 +52,6 @@ export function KpiGrid(p: KpiGridProps) {
   }
 
   const kpis: Kpi[] = [
-    {
-      label: 'XP total',
-      value: String(p.xpTotal),
-      sub: `Nível ${p.nivel} • ${p.xpNoNivel}/${p.xpProximoNivel} XP`,
-      icon: <Zap className="h-4 w-4" />,
-      accent: 'text-amber-500 dark:text-amber-400',
-      progress: (p.xpNoNivel / p.xpProximoNivel) * 100,
-    },
     {
       label: 'Dias consecutivos',
       value: String(p.streakDias),
@@ -108,7 +95,7 @@ export function KpiGrid(p: KpiGridProps) {
     {
       label: 'Conteúdos dominados',
       value: String(p.conteudosDominados ?? 0),
-      sub: 'No MPC',
+      sub: 'No plano de estudos',
       icon: <BookOpenCheck className="h-4 w-4" />,
       accent: 'text-blue-600 dark:text-blue-400',
     },

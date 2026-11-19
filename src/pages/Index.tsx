@@ -26,7 +26,6 @@ export default function Index() {
   }, [])
   useRealtime('missoes', () => loadMissoes())
 
-  const xp = parseInt(localStorage.getItem('tdah_med_xp') || '250', 10)
   const streak = parseInt(localStorage.getItem('tdah_med_streak') || '4', 10)
 
   const concluidas = missoes.filter((m) => m.status === 'concluida')
@@ -60,9 +59,9 @@ export default function Index() {
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle">
           <div className="flex items-center gap-2 mb-1">
             <Star className="w-5 h-5 text-violet-600 fill-violet-500" />
-            <span className="text-xs font-bold text-slate-600">Pontos XP</span>
+            <span className="text-xs font-bold text-slate-600">Missões de hoje</span>
           </div>
-          <p className="text-xl font-black text-slate-900">{xp} XP</p>
+          <p className="text-xl font-black text-slate-900">{missoes.length}</p>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-subtle">
           <div className="flex items-center gap-2 mb-1">

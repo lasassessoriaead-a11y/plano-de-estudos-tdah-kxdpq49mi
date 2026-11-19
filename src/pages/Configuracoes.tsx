@@ -3,19 +3,11 @@ import { useAuth } from '@/hooks/use-auth'
 import { toast } from '@/hooks/use-toast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Slider } from '@/components/ui/slider'
-import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
-import {
-  saveUserPreferences,
-  getUserPreferences,
-  summarizeXp,
-  getXpTransactions,
-} from '@/services/premium'
-import { Loader2, Settings2, Target, Trophy, Zap, Palette } from 'lucide-react'
+import { saveUserPreferences, getUserPreferences } from '@/services/premium'
+import { Loader2, Settings2, Target, Palette } from 'lucide-react'
 import { useTheme } from '@/hooks/use-theme'
 
 export default function Configuracoes() {
@@ -25,7 +17,6 @@ export default function Configuracoes() {
   const [saving, setSaving] = useState(false)
   const [metaDiaria, setMetaDiaria] = useState<number[]>([60])
   const [metaSemanal, setMetaSemanal] = useState<number[]>([420])
-  const [xp, setXp] = useState({ xpTotal: 0, nivel: 1, xpNoNivel: 0, xpProximoNivel: 500 })
 
   useEffect(() => {
     if (!user?.id) return
@@ -36,8 +27,6 @@ export default function Configuracoes() {
           setMetaDiaria([prefs.meta_diaria_min || 60])
           setMetaSemanal([prefs.meta_semanal_min || 420])
         }
-        const txs = await getXpTransactions(user.id)
-        setXp(summarizeXp(txs))
       } catch (err) {
         toast({
           title: 'Erro ao carregar preferências',
@@ -148,30 +137,6 @@ export default function Configuracoes() {
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             Salvar metas
           </Button>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-sm">
-            <Zap className="h-4 w-4 text-primary" /> XP e conquistas
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge className="gap-1">
-              <Trophy className="h-3 w-3" /> Nível {xp.nivel}
-            </Badge>
-            <Badge variant="secondary">{xp.xpTotal} XP total</Badge>
-            <Badge variant="outline">
-              {xp.xpNoNivel}/{xp.xpProximoNivel} XP no nível
-            </Badge>
-          </div>
-          <Separator />
-          <p className="text-xs text-muted-foreground">
-            O XP é calculado no servidor a cada missão concluída (100 XP) e questão respondida (10
-            XP). Conquistas são desbloqueadas automaticamente conforme seu progresso real.
-          </p>
         </CardContent>
       </Card>
     </div>

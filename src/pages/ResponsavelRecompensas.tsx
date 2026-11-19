@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getRecompensas, RecompensaRecord } from '@/services/recompensas'
+import { getRecompensas, updateRecompensa, RecompensaRecord } from '@/services/recompensas'
 import { useRealtime } from '@/hooks/use-realtime'
 import { Gift, Wallet, CheckCircle2, Sparkles, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'

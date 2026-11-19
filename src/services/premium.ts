@@ -92,78 +92,6 @@ export const createNotification = async (data: Partial<NotificationRecord>) => {
   return pb.collection('notifications').create<NotificationRecord>(data)
 }
 
-// ---------- achievements ----------
-export interface AchievementRecord {
-  id: string
-  codigo: string
-  nome: string
-  descricao: string
-  icone: string
-  xp_recompensa: number
-  condicao: string
-  limiar: number
-}
-
-export const getAchievements = async (): Promise<AchievementRecord[]> => {
-  return pb.collection('achievements').getFullList<AchievementRecord>({ sort: 'limiar' })
-}
-
-export interface UserAchievementRecord {
-  id: string
-  usuario_id: string
-  achievement_id: string
-  created: string
-  expand?: { achievement_id?: AchievementRecord }
-}
-
-export const getUserAchievements = async (userId: string): Promise<UserAchievementRecord[]> => {
-  return pb.collection('user_achievements').getFullList<UserAchievementRecord>({
-    filter: `usuario_id="${userId}"`,
-    expand: 'achievement_id',
-  })
-}
-
-// ---------- xp_transactions ----------
-export interface XpTransactionRecord {
-  id: string
-  usuario_id: string
-  quantidade: number
-  motivo: string
-  origem: 'missao' | 'questao' | 'revisao' | 'conquista' | 'bonus' | ''
-  referencia_id: string
-  created: string
-}
-
-export const getXpTransactions = async (userId: string): Promise<XpTransactionRecord[]> => {
-  return pb.collection('xp_transactions').getFullList<XpTransactionRecord>({
-    filter: `usuario_id="${userId}"`,
-    sort: '-created',
-  })
-}
-
-export interface XpSummary {
-  xpTotal: number
-  nivel: number
-  xpNoNivel: number
-  xpProximoNivel: number
-  progressoNivel: number // 0..1
-}
-
-export const XP_POR_NIVEL = 500
-
-export const summarizeXp = (txs: XpTransactionRecord[]): XpSummary => {
-  const xpTotal = txs.reduce((s, t) => s + (t.quantidade || 0), 0)
-  const nivel = Math.floor(xpTotal / XP_POR_NIVEL) + 1
-  const xpNoNivel = xpTotal % XP_POR_NIVEL
-  return {
-    xpTotal,
-    nivel,
-    xpNoNivel,
-    xpProximoNivel: XP_POR_NIVEL,
-    progressoNivel: xpNoNivel / XP_POR_NIVEL,
-  }
-}
-
 // ---------- MPC: mpc_contents ----------
 export interface MpcContentRecord {
   id: string
@@ -184,14 +112,6 @@ export const getMpcContents = async (): Promise<MpcContentRecord[]> => {
     expand: 'topico_id,materia_id',
     sort: '-created',
   })
-}
-
-export const createMpcContent = async (data: Partial<MpcContentRecord>) => {
-  return pb.collection('mpc_contents').create<MpcContentRecord>(data)
-}
-
-export const updateMpcContent = async (id: string, data: Partial<MpcContentRecord>) => {
-  return pb.collection('mpc_contents').update<MpcContentRecord>(id, data)
 }
 
 // ---------- MPC: content_progress ----------

@@ -12,8 +12,6 @@ import { DashboardCharts } from '@/components/dashboard/DashboardCharts'
 import { ProximoPasso } from '@/components/dashboard/ProximoPasso'
 import { EmptyState } from '@/components/EmptyState'
 import {
-  summarizeXp,
-  getXpTransactions,
   getMissoesConcluidas,
   getQuestoesUsuario,
   getContentProgress,
@@ -73,13 +71,6 @@ const semanaSegunda = (offset: number) => {
 export default function Dashboard() {
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
-  const [xp, setXp] = useState({
-    xpTotal: 0,
-    nivel: 1,
-    xpNoNivel: 0,
-    xpProximoNivel: 500,
-    progressoNivel: 0,
-  })
   const [streak, setStreak] = useState(0)
   const [questoes, setQuestoes] = useState<{ resolvidas: number; acertos: number }>({
     resolvidas: 0,
@@ -115,9 +106,8 @@ export default function Dashboard() {
     let mounted = true
     ;(async () => {
       try {
-        const [txs, missoes, questoesList, prefsRows, sessionsList, progressoList, conteudosList] =
+        const [missoes, questoesList, prefsRows, sessionsList, progressoList, conteudosList] =
           await Promise.all([
-            getXpTransactions(user.id),
             getMissoesConcluidas(user.id),
             getQuestoesUsuario(user.id),
             pbGetPrefs(user.id),
@@ -127,7 +117,6 @@ export default function Dashboard() {
           ])
         if (!mounted) return
 
-        setXp(summarizeXp(txs))
         setMissoesConcluidas(missoes.length)
 
         // streak: dias consecutivos com missão concluída
@@ -280,10 +269,6 @@ export default function Dashboard() {
 
       <KpiGrid
         loading={loading}
-        xpTotal={xp.xpTotal}
-        nivel={xp.nivel}
-        xpNoNivel={xp.xpNoNivel}
-        xpProximoNivel={xp.xpProximoNivel}
         streakDias={streak}
         questoesResolvidas={questoes.resolvidas}
         taxaAcerto={taxaAcerto}
@@ -364,18 +349,13 @@ export default function Dashboard() {
       <Card>
         <CardHeader className="flex flex-row items-center gap-2 pb-2">
           <BookOpenCheck className="h-4 w-4 text-primary" />
-          <CardTitle className="text-sm">Progresso geral (MPC)</CardTitle>
+          <CardTitle className="text-sm">Progresso geral</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <Skeleton className="h-6 w-48" />
           ) : conteudosMpc.total === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Nenhum conteúdo cadastrado no MPC ainda.{' '}
-              <Link to="/mpc" className="font-medium text-primary hover:underline">
-                Cadastrar conteúdos
-              </Link>
-            </p>
+            <p className="text-sm text-muted-foreground">Nenhum conteúdo cadastrado ainda.</p>
           ) : (
             <>
               <div className="flex items-center gap-2 text-sm">
@@ -386,7 +366,7 @@ export default function Dashboard() {
               </div>
               <Separator className="my-3" />
               <p className="text-xs text-muted-foreground">
-                Domínio registrado manualmente por você no MPC — nada inventado.
+                Domínio registrado manualmente por você — nada inventado.
               </p>
             </>
           )}
@@ -437,7 +417,7 @@ function calcularRecomendacao(
     return {
       titulo: c?.nome || 'Conteúdo difícil',
       motivo: 'Você registrou dificuldade neste conteúdo.',
-      link: '/mpc',
+      link: '/plano',
       cta: 'Retomar estudo',
       icone: 'target',
     }
@@ -449,7 +429,7 @@ function calcularRecomendacao(
     return {
       titulo: c?.nome || 'Conteúdo em andamento',
       motivo: 'Continue de onde parou.',
-      link: '/mpc',
+      link: '/plano',
       cta: 'Continuar',
       icone: 'book',
     }

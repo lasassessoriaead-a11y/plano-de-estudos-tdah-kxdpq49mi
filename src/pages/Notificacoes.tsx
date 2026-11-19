@@ -146,7 +146,7 @@ export default function Notificacoes() {
             </h3>
             <p className="text-sm text-muted-foreground font-medium max-w-sm mx-auto">
               {filter === 'todas'
-                ? 'Seus avisos de estudo, conquistas e lembretes aparecem aqui à medida que você avança no plano.'
+                ? 'Seus avisos de estudo e lembretes aparecem aqui à medida que você avança no plano.'
                 : filter === 'nao_lidas'
                   ? 'Tudo lido! Volte mais tarde para conferir novos avisos.'
                   : 'Ao ler uma notificação, ela aparece nesta lista.'}

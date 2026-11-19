@@ -113,7 +113,7 @@ function ContinueLista(props: {
   if (emAndamento.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        Nenhuma atividade em andamento. Explore o MPC para escolher o próximo conteúdo.
+        Nenhuma atividade em andamento. Escolha o próximo conteúdo no Plano de Estudos.
       </p>
     )
   }
@@ -128,7 +128,7 @@ function ContinueLista(props: {
         return (
           <Link
             key={c!.id}
-            to="/mpc"
+            to="/plano"
             className="group flex items-center justify-between rounded-lg border border-transparent px-3 py-2 transition-colors hover:border-border hover:bg-accent/40"
           >
             <div className="min-w-0">
