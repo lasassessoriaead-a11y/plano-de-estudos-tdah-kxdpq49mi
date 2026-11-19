@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-19T03:22:03.779Z",
+  "generatedAt": "2026-11-19T04:00:32.998Z",
   "collections": [
     {
       "name": "users",
@@ -2133,6 +2133,664 @@
         }
       ],
       "indexes": ["CREATE UNIQUE INDEX idx_perfil_estudo_usuario ON perfil_estudo (usuario_id)"]
+    },
+    {
+      "name": "sim_instituicoes",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": null,
+        "update": null,
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "sigla",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "categoria",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["vestibular", "faculdade_particular", "universidade_publica", "concurso"]
+        },
+        {
+          "name": "tipo",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["publica", "particular"]
+        },
+        {
+          "name": "bancas",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "descricao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "formato_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cursos",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ativa",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE UNIQUE INDEX idx_siminst_nome ON sim_instituicoes (nome)"]
+    },
+    {
+      "name": "sim_bancas",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": null,
+        "update": null,
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "estilo",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["multipla_escolha", "certo_errado", "discursiva", "misto"]
+        },
+        {
+          "name": "descricao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE UNIQUE INDEX idx_simbancas_nome ON sim_bancas (nome)"]
+    },
+    {
+      "name": "sim_provas",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": null,
+        "update": null,
+        "delete": null
+      },
+      "fields": [
+        {
+          "name": "instituicao",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "banca",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ano",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "fase",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "curso_cargo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "titulo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "materias",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "total_questoes",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "duracao_min",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "ativo",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE INDEX idx_simprovas_inst ON sim_provas (instituicao)"]
+    },
+    {
+      "name": "sim_questoes_expandidas",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && (aprovada = true || usuario_id = @request.auth.id)",
+        "view": "@request.auth.id != '' && (aprovada = true || usuario_id = @request.auth.id)",
+        "create": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "update": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "delete": "@request.auth.id != '' && usuario_id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "usuario_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "enunciado",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "alternativas",
+          "type": "json",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "gabarito",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "gabarito_texto",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "resolucao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "materia",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "assunto",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "tipo_questao",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["multipla_escolha", "certo_errado", "discursiva"]
+        },
+        {
+          "name": "dificuldade",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["facil", "medio", "dificil"]
+        },
+        {
+          "name": "ano",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "instituicao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "banca",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "curso_cargo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "fonte",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "origem",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["oficial_autorizada", "gerada_ia"]
+        },
+        {
+          "name": "aprovada",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "gerada_por_simulado_id",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "hash_duplicata",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_simqexp_materia ON sim_questoes_expandidas (materia)",
+        "CREATE INDEX idx_simqexp_inst ON sim_questoes_expandidas (instituicao)",
+        "CREATE INDEX idx_simqexp_hash ON sim_questoes_expandidas (hash_duplicata)"
+      ]
+    },
+    {
+      "name": "sim_editais",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "view": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "create": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "update": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "delete": "@request.auth.id != '' && usuario_id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "usuario_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "titulo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "orgao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "banca",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "arquivo",
+          "type": "file",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["enviado", "processando", "processado", "erro"]
+        },
+        {
+          "name": "disciplinas_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "erro_msg",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "sim_provas_ia",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "view": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "create": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "update": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "delete": "@request.auth.id != '' && usuario_id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "usuario_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "titulo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "instituicao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "banca",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "curso_cargo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "modo",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["prova_anterior", "base_provas_reais", "inedito_ia", "misto"]
+        },
+        {
+          "name": "config_json",
+          "type": "json",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "questoes_json",
+          "type": "json",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "qtd_oficiais",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "qtd_ia",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "duracao_min",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["gerando", "pronta", "erro"]
+        },
+        {
+          "name": "erro_msg",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "sim_tentativas_ia",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "view": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "create": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "update": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "delete": "@request.auth.id != '' && usuario_id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "usuario_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "prova_ia_id",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["em_andamento", "finalizada", "abandonada"]
+        },
+        {
+          "name": "respostas_json",
+          "type": "json",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "marcadas_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "tempo_usado_seg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "iniciado_em",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "finalizado_em",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "pct_acerto",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "resultado_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "analise_ia",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "favorita",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE INDEX idx_simtentia_prova ON sim_tentativas_ia (prova_ia_id)"]
     }
   ]
 }
