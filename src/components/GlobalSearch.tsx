@@ -47,10 +47,10 @@ export default function GlobalSearch({ materias, topicos, conteudos }: Props) {
         out.push({ key: `t-${t.id}`, label: t.nome, sub: 'Tópico', to: '/plano', icon: FolderTree })
     }
     for (const c of conteudos) {
-      if (c.titulo?.toLowerCase().includes(q))
+      if (c.nome?.toLowerCase().includes(q))
         out.push({
           key: `c-${c.id}`,
-          label: c.titulo,
+          label: c.nome,
           sub: 'Conteúdo MPC',
           to: `/mpc?conteudo=${c.id}`,
           icon: FileText,

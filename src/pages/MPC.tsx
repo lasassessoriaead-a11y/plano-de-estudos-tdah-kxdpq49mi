@@ -106,7 +106,7 @@ export default function MPC() {
         getContentProgress(user.id),
       ])
       setMaterias(m)
-      setTopicos(t.map((x) => ({ id: x.id, nome: x.nome, materia_id: x.materia_id })))
+      setTopicos(t.map((x) => ({ id: x.id, nome: x.titulo, materia_id: x.materia_id })))
       setConteudos(c)
       const map: Record<string, ContentProgressRecord> = {}
       for (const rec of p) map[rec.conteudo_id] = rec
@@ -616,7 +616,8 @@ function ConteudoDetalhe({
           <div>
             <CardTitle className="text-base leading-snug">{conteudo.nome}</CardTitle>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              {conteudo.expand?.materia_id?.nome || ''}
+              {(conteudo.expand as unknown as { materia_id?: { nome?: string } } | undefined)
+                ?.materia_id?.nome || ''}
               {conteudo.subassunto ? ` • ${conteudo.subassunto}` : ''}
             </p>
           </div>

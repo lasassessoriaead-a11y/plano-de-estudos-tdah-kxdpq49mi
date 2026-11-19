@@ -24,8 +24,6 @@ import {
   type StudySessionRecord,
 } from '@/services/premium'
 import type { MissaoRecord } from '@/services/missoes'
-import { getMissoesData } from '@/services/missoes'
-import { getQuestoesRevisao } from '@/services/questoes'
 import {
   BookOpenCheck,
   ClipboardList,
@@ -198,8 +196,9 @@ export default function Dashboard() {
         // desempenho por matéria (via questões -> pildes -> topico -> materia)
         const nomeMateria = new Map<string, string>()
         for (const c of conteudosList) {
-          const nome = (c.expand?.materia_id as { nome?: string } | undefined)?.nome
-          if (nome) nomeMateria.set(c.materia_id, nome)
+          const exp = c.expand as unknown as { materia_id?: { nome?: string } } | undefined
+          const nome = exp?.materia_id?.nome
+          if (nome) nomeMateria.set(String(c.materia_id || ''), nome)
         }
         const porMateria = new Map<string, { total: number; acertos: number }>()
         for (const q of resolvidas) {
@@ -230,7 +229,7 @@ export default function Dashboard() {
             id: m.id,
             titulo: m.titulo || 'Missão de sprint',
             data: (m.data || '').slice(0, 10),
-            minutos: m.duracao_min || 0,
+            minutos: 0,
           })),
         )
 
@@ -406,7 +405,7 @@ async function pbGetPrefs(userId: string) {
 function calcularRecomendacao(
   progressoList: ContentProgressRecord[],
   conteudosList: MpcContentRecord[],
-  missoes: { id: string; status: string; data: string }[],
+  missoes: readonly { id: string; status?: string; data?: string }[],
 ): {
   titulo: string
   motivo: string
@@ -426,7 +425,7 @@ function calcularRecomendacao(
     return {
       titulo: c?.nome || 'Revisão pendente',
       motivo: 'Revisão agendada para hoje (revisão espaçada).',
-      link: '/banco-erros',
+      link: '/erros',
       cta: 'Revisar agora',
       icone: 'refresh',
     }
