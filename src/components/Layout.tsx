@@ -1,35 +1,17 @@
-import { useEffect, useState } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '@/hooks/use-auth'
-import { useTheme } from '@/hooks/use-theme'
-import { getNotifications, type NotificationRecord } from '@/services/premium'
+import { useState, useEffect, useCallback } from 'react'
+import { Outlet, useNavigate } from 'react-router-dom'
+import { pb } from '@/lib/pocketbase/client'
 import { getMaterias } from '@/services/materias'
 import { getTopicos } from '@/services/topicos'
-import { PanelLeftClose, PanelLeftOpen, Bell, LogOut, Sun, Moon } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
-import LayoutSidebar from './LayoutSidebar'
-import GlobalSearch from './GlobalSearch'
-
-const pageTitle: Record<string, string> = {
-  '/': 'Início',
-  '/dashboard': 'Dashboard',
-  '/missao': 'Missão de Hoje',
-  '/plano': 'Plano de Estudos',
-  '/erros': 'Banco de Erros',
-  '/chat': 'Chat',
-  '/notificacoes': 'Notificações',
-  '/configuracoes': 'Configurações',
-}
+import { getNotifications } from '@/services/premium'
+import { getPerfilEstudo } from '@/services/perfil'
+import { useAuth } from '@/hooks/use-auth'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { Button } from '@/components/ui/button'
+import LayoutSidebar from '@/components/LayoutSidebar'
+import GlobalSearch from '@/components/GlobalSearch'
+import { NexoraSplash } from '@/components/Logo'
+import { Bell, LogOut, Menu, Search } from 'lucide-react'
 
 export interface SearchData {
   materias: { id: string; nome: string }[]
@@ -37,193 +19,156 @@ export interface SearchData {
 }
 
 export default function Layout() {
-  const { user, signOut } = useAuth()
-  const { theme, toggleTheme } = useTheme()
-  const location = useLocation()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const isMobile = useIsMobile()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [searchData, setSearchData] = useState<SearchData>({ materias: [], topicos: [] })
+  const [naoLidas, setNaoLidas] = useState(0)
+  const [nome, setNome] = useState('')
+  const [onboardingPendente, setOnboardingPendente] = useState(false)
 
-  const [collapsed, setCollapsed] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [unread, setUnread] = useState(0)
-  const [searchData, setSearchData] = useState<SearchData>({
-    materias: [],
-    topicos: [],
-  })
-
-  // contagem de não-lidas da coleção nova "notifications" (central do estudante)
   useEffect(() => {
-    let mounted = true
     const load = async () => {
-      if (!user?.id) return
-      try {
-        const list: NotificationRecord[] = await getNotifications(user.id)
-        if (mounted) setUnread(list.filter((n) => !n.lida).length)
-      } catch {
-        /* sino apenas mostra 0 */
-      }
-    }
-    load()
-    const t = window.setInterval(load, 30000)
-    return () => {
-      mounted = false
-      window.clearInterval(t)
-    }
-  }, [user?.id, location.pathname])
-
-  // dados da busca global (matérias e tópicos)
-  useEffect(() => {
-    let mounted = true
-    ;(async () => {
       try {
         const [m, t] = await Promise.all([getMaterias(), getTopicos()])
-        if (!mounted) return
         setSearchData({
           materias: m.map((x) => ({ id: x.id, nome: x.nome })),
           topicos: t.map((x) => ({ id: x.id, nome: x.titulo, materia_id: x.materia_id })),
         })
       } catch {
-        /* busca global fica vazia */
+        setSearchData({ materias: [], topicos: [] })
       }
-    })()
-    return () => {
-      mounted = false
     }
+    load()
   }, [])
 
-  useEffect(() => {
-    setMobileOpen(false)
-  }, [location.pathname])
+  const refreshNotifications = useCallback(async () => {
+    if (!user) return
+    try {
+      const list = await getNotifications(user.id)
+      setNaoLidas(list.filter((n) => !n.lida).length)
+    } catch {
+      setNaoLidas(0)
+    }
+  }, [user])
 
-  const currentTitle = pageTitle[location.pathname] || 'Plano de Estudos'
+  useEffect(() => {
+    refreshNotifications()
+  }, [refreshNotifications])
+
+  // Onboarding pendente (novos cadastros). Usuários existentes sem registro em
+  // perfil_estudo entram direto — só redireciona quando o registro existe e
+  // marca explicitamente onboarding_concluido = false.
+  useEffect(() => {
+    const check = async () => {
+      if (!user) return
+      try {
+        const perfil = await getPerfilEstudo(user.id)
+        setOnboardingPendente(!!perfil && !perfil.onboarding_concluido)
+      } catch {
+        setOnboardingPendente(false)
+      }
+    }
+    check()
+  }, [user])
+
+  useEffect(() => {
+    if (onboardingPendente) navigate('/onboarding', { replace: true })
+  }, [onboardingPendente, navigate])
+
+  useEffect(() => {
+    if (user) {
+      setNome(user.name || user.email?.split('@')[0] || '')
+      setOnboardingPendente(false)
+    }
+  }, [user])
+
+  const handleLogout = () => {
+    pb.authStore.clear()
+    navigate('/login')
+  }
+
+  if (!user) return <NexoraSplash message="Carregando sua jornada..." />
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex font-sans">
-      {/* Sidebar desktop (expansível/recolhível) */}
-      <aside
-        className={cn(
-          'hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:z-30 border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 ease-in-out',
-          collapsed ? 'lg:w-[68px]' : 'lg:w-64',
-        )}
-      >
-        <LayoutSidebar
-          collapsed={collapsed}
-          onToggle={() => setCollapsed((v) => !v)}
-          onNavigate={() => setMobileOpen(false)}
-        />
-      </aside>
+    <div className="min-h-screen bg-[#050505] text-white">
+      <div className="flex">
+        <LayoutSidebar open={isMobile ? sidebarOpen : true} onClose={() => setSidebarOpen(false)} />
 
-      {/* Sidebar mobile (drawer) */}
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent
-          side="left"
-          className="w-72 p-0 bg-sidebar text-sidebar-foreground border-sidebar-border"
-        >
-          <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
-          <LayoutSidebar collapsed={false} onNavigate={() => setMobileOpen(false)} mobile />
-        </SheetContent>
-      </Sheet>
-
-      <div
-        className={cn(
-          'flex-1 flex flex-col min-h-screen transition-[padding] duration-200 ease-in-out',
-          collapsed ? 'lg:pl-[68px]' : 'lg:pl-64',
-        )}
-      >
-        <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border px-4 lg:px-6 py-2.5 flex items-center gap-2 sm:gap-3">
-          <button
-            className="hidden lg:inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            onClick={() => setCollapsed((v) => !v)}
-            aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
-          >
-            {collapsed ? (
-              <PanelLeftOpen className="h-5 w-5" />
-            ) : (
-              <PanelLeftClose className="h-5 w-5" />
+        <div className="flex-1 min-w-0 flex flex-col min-h-screen">
+          {/* Topbar */}
+          <header className="sticky top-0 z-30 border-b border-white/10 bg-[#050505]/85 backdrop-blur-md">
+            <div className="flex items-center gap-3 px-4 py-3">
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSidebarOpen(true)}
+                  className="text-slate-300 hover:text-white hover:bg-white/10 shrink-0"
+                  aria-label="Abrir menu"
+                >
+                  <Menu className="w-5 h-5" />
+                </Button>
+              )}
+              <div className="hidden sm:flex items-center flex-1 max-w-md">
+                <GlobalSearch materias={searchData.materias} topicos={searchData.topicos} />
+              </div>
+              <div className="sm:hidden flex-1" />
+              <div className="flex items-center gap-2 ml-auto">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative text-slate-400 hover:text-white hover:bg-white/10"
+                  onClick={() => navigate('/notificacoes')}
+                  aria-label="Notificações"
+                >
+                  <Bell className="w-5 h-5" />
+                  {naoLidas > 0 && (
+                    <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                  )}
+                </Button>
+                <div className="hidden md:block text-right mr-1">
+                  <p className="text-sm font-bold text-white leading-tight truncate max-w-[160px]">
+                    {nome}
+                  </p>
+                  <p className="text-[11px] text-slate-500 font-medium">Estudante</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleLogout}
+                  className="text-slate-400 hover:text-red-400 hover:bg-red-500/10"
+                  aria-label="Sair"
+                >
+                  <LogOut className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+            {isMobile && (
+              <div className="px-4 pb-3">
+                <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3">
+                  <Search className="w-4 h-4 text-slate-500 shrink-0" />
+                  <input
+                    type="text"
+                    readOnly
+                    onFocus={(e) => {
+                      e.target.blur()
+                      setSidebarOpen(false)
+                    }}
+                    onClick={() => setSidebarOpen(true)}
+                    placeholder="Buscar no menu..."
+                    className="w-full bg-transparent py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none"
+                  />
+                </div>
+              </div>
             )}
-          </button>
-          <button
-            className="lg:hidden inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            onClick={() => setMobileOpen(true)}
-            aria-label="Abrir menu"
-          >
-            <PanelLeftOpen className="h-5 w-5" />
-          </button>
+          </header>
 
-          <h2 className="hidden sm:block text-base font-bold tracking-tight truncate">
-            {currentTitle}
-          </h2>
-
-          <div className="flex-1" />
-
-          <GlobalSearch materias={searchData.materias} topicos={searchData.topicos} />
-
-          {/* alternância de tema */}
-          <button
-            className="inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            onClick={toggleTheme}
-            aria-label={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
-          >
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </button>
-
-          {/* sino de notificações com contagem de não-lidas */}
-          <button
-            className="relative inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            onClick={() => navigate('/notificacoes')}
-            aria-label={`Notificações (${unread} não lidas)`}
-          >
-            <Bell className="h-5 w-5" />
-            {unread > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
-                {unread > 9 ? '9+' : unread}
-              </span>
-            )}
-          </button>
-
-          {/* perfil do estudante logado */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                <Avatar className="w-9 h-9 border border-border cursor-pointer">
-                  <AvatarFallback className="bg-primary text-primary-foreground font-bold text-xs">
-                    {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'E'}
-                  </AvatarFallback>
-                </Avatar>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="flex flex-col">
-                <span className="text-sm font-semibold text-foreground">
-                  {user?.name || 'Estudante'}
-                </span>
-                <span className="text-xs font-normal text-muted-foreground truncate">
-                  {user?.email}
-                </span>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => navigate('/configuracoes')}
-              >
-                Configurações
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive cursor-pointer"
-                onClick={() => {
-                  signOut()
-                  navigate('/login')
-                }}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sair da conta
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </header>
-
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 animate-fade-in w-full max-w-7xl mx-auto">
-          <Outlet />
-        </main>
+          <main className="flex-1 p-4 sm:p-6">
+            <Outlet />
+          </main>
+        </div>
       </div>
     </div>
   )
