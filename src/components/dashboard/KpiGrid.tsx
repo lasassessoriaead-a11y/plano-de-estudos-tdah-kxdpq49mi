@@ -25,6 +25,8 @@ interface KpiGridProps {
   minutosHoje: number
   metaDiaria: number
   questoesAtrasadas: number
+  missoesConcluidas?: number
+  conteudosDominados?: number
 }
 
 interface Kpi {

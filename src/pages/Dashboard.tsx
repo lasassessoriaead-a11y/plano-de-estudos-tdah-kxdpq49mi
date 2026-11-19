@@ -291,6 +291,8 @@ export default function Dashboard() {
         minutosHoje={minutosHoje}
         metaDiaria={metaDiaria}
         questoesAtrasadas={0}
+        missoesConcluidas={missoesConcluidas}
+        conteudosDominados={conteudosMpc.dominados}
       />
 
       <ProximoPasso

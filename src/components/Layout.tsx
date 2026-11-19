@@ -1,17 +1,18 @@
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
+import { useTheme } from '@/hooks/use-theme'
 import {
-  LayoutDashboard,
-  Target,
-  BookOpenCheck,
-  AlertCircle,
-  MessageSquare,
-  LogOut,
-  Flame,
-  Star,
-} from 'lucide-react'
+  getNotifications,
+  getMpcContents,
+  getXpTransactions,
+  type NotificationRecord,
+  type MpcContentRecord,
+} from '@/services/premium'
+import { getMaterias } from '@/services/materias'
+import { getTopicos } from '@/services/topicos'
+import { PanelLeftClose, PanelLeftOpen, Bell, LogOut, Sun, Moon, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useState, useEffect } from 'react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,187 +22,240 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import LayoutSidebar from './LayoutSidebar'
+import GlobalSearch from './GlobalSearch'
 
-const navItems = [
-  { label: 'Painel', path: '/', icon: LayoutDashboard },
-  { label: 'Missão de Hoje', path: '/missao', icon: Target },
-  { label: 'Plano de Estudos', path: '/plano', icon: BookOpenCheck },
-  { label: 'Banco de Erros', path: '/erros', icon: AlertCircle },
-  { label: 'Chat', path: '/chat', icon: MessageSquare },
-]
+const pageTitle: Record<string, string> = {
+  '/': 'Início',
+  '/dashboard': 'Dashboard',
+  '/missao': 'Missão de Hoje',
+  '/plano': 'Plano de Estudos',
+  '/mpc': 'MPC',
+  '/erros': 'Banco de Erros',
+  '/chat': 'Chat',
+  '/recompensas': 'Recompensas',
+  '/notificacoes': 'Notificações',
+  '/configuracoes': 'Configurações',
+}
+
+export interface SearchData {
+  materias: { id: string; nome: string }[]
+  topicos: { id: string; nome: string; materia_id: string }[]
+  conteudos: MpcContentRecord[]
+}
 
 export default function Layout() {
   const { user, signOut } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const location = useLocation()
   const navigate = useNavigate()
 
-  const [xp, setXp] = useState<number>(() => {
-    return parseInt(localStorage.getItem('tdah_med_xp') || '250', 10)
-  })
-  const [streak, setStreak] = useState<number>(() => {
-    return parseInt(localStorage.getItem('tdah_med_streak') || '4', 10)
+  const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [unread, setUnread] = useState(0)
+  const [xp, setXp] = useState(0)
+  const [searchData, setSearchData] = useState<SearchData>({
+    materias: [],
+    topicos: [],
+    conteudos: [],
   })
 
+  // contagem de não-lidas da coleção nova "notifications" (central do estudante)
   useEffect(() => {
-    const handleStorage = () => {
-      setXp(parseInt(localStorage.getItem('tdah_med_xp') || '250', 10))
-      setStreak(parseInt(localStorage.getItem('tdah_med_streak') || '4', 10))
+    let mounted = true
+    const load = async () => {
+      if (!user?.id) return
+      try {
+        const list: NotificationRecord[] = await getNotifications(user.id)
+        if (mounted) setUnread(list.filter((n) => !n.lida).length)
+      } catch {
+        /* sino apenas mostra 0 */
+      }
     }
-    window.addEventListener('storage', handleStorage)
-    return () => window.removeEventListener('storage', handleStorage)
+    load()
+    const t = window.setInterval(load, 30000)
+    return () => {
+      mounted = false
+      window.clearInterval(t)
+    }
+  }, [user?.id, location.pathname])
+
+  // dados da busca global (matérias, tópicos, conteúdos do MPC)
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        const [m, t, c] = await Promise.all([getMaterias(), getTopicos(), getMpcContents()])
+        if (!mounted) return
+        setSearchData({
+          materias: m.map((x) => ({ id: x.id, nome: x.nome })),
+          topicos: t.map((x) => ({ id: x.id, nome: x.titulo, materia_id: x.materia_id })),
+          conteudos: c,
+        })
+      } catch {
+        /* busca global fica vazia */
+      }
+    })()
+    return () => {
+      mounted = false
+    }
   }, [])
 
-  const currentNav = navItems.find((item) => item.path === location.pathname)
-  const currentTitle = currentNav ? currentNav.label : 'Missão Medicina'
+  // XP real do banco (calculado no servidor via hooks)
+  useEffect(() => {
+    if (!user?.id) return
+    getXpTransactions(user.id)
+      .then((txs) => setXp(txs.reduce((s, t) => s + (t.quantidade || 0), 0)))
+      .catch(() => {})
+  }, [user?.id, location.pathname])
+
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [location.pathname])
+
+  const currentTitle = pageTitle[location.pathname] || 'Plano de Estudos'
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row text-slate-900 font-sans">
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 bg-white border-r border-slate-200 z-30 shadow-subtle">
-        <div className="p-6 border-b border-slate-100 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 to-amber-500 flex items-center justify-center text-white shadow-md">
-            <Target className="w-6 h-6 animate-pulse" />
-          </div>
-          <div>
-            <h1 className="font-extrabold text-base tracking-tight text-slate-900">
-              Missão Medicina
-            </h1>
-            <p className="text-xs font-semibold text-violet-600 uppercase tracking-wider">
-              Sprints TDAH
-            </p>
-          </div>
-        </div>
-
-        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-          {navItems.map((item) => {
-            const Icon = item.icon
-            const isActive = location.pathname === item.path
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200',
-                  isActive
-                    ? 'bg-violet-50 text-violet-700 border-l-4 border-violet-600 shadow-xs'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
-                )}
-              >
-                <Icon className={cn('w-5 h-5', isActive ? 'text-violet-600' : 'text-slate-500')} />
-                <span>{item.label}</span>
-              </Link>
-            )
-          })}
-        </nav>
-
-        <div className="p-4 border-t border-slate-100">
-          <div className="p-3.5 rounded-xl bg-gradient-to-br from-violet-50 to-amber-50 border border-violet-100 space-y-2">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-700">
-              <span className="flex items-center gap-1 text-amber-600">
-                <Flame className="w-4 h-4 fill-amber-500" /> {streak} dias
-              </span>
-              <span className="flex items-center gap-1 text-violet-700">
-                <Star className="w-4 h-4 fill-violet-500" /> {xp} XP
-              </span>
-            </div>
-            <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-              <div
-                className="bg-gradient-to-r from-violet-600 to-amber-500 h-full rounded-full transition-all duration-500"
-                style={{ width: `${Math.min((xp % 500) / 5, 100)}%` }}
-              />
-            </div>
-            <p className="text-xs text-slate-600 text-center font-medium">
-              Nível Medicina • Próximo marco em {500 - (xp % 500)} XP
-            </p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-background text-foreground flex font-sans">
+      {/* Sidebar desktop (expansível/recolhível) */}
+      <aside
+        className={cn(
+          'hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:z-30 border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 ease-in-out',
+          collapsed ? 'lg:w-[68px]' : 'lg:w-64',
+        )}
+      >
+        <LayoutSidebar
+          collapsed={collapsed}
+          onToggle={() => setCollapsed((v) => !v)}
+          onNavigate={() => setMobileOpen(false)}
+        />
       </aside>
 
-      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen">
-        <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3 flex items-center justify-between shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="lg:hidden w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center text-white font-bold text-sm">
-              M
-            </div>
-            <h2 className="text-lg font-bold text-slate-900 tracking-tight">{currentTitle}</h2>
-          </div>
+      {/* Sidebar mobile (drawer) */}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent
+          side="left"
+          className="w-72 p-0 bg-sidebar text-sidebar-foreground border-sidebar-border"
+        >
+          <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
+          <LayoutSidebar collapsed={false} onNavigate={() => setMobileOpen(false)} mobile />
+        </SheetContent>
+      </Sheet>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-extrabold shadow-2xs">
-              <Flame className="w-4 h-4 text-amber-500 fill-amber-500 animate-bounce" />
-              <span>{streak}d</span>
-            </div>
+      <div
+        className={cn(
+          'flex-1 flex flex-col min-h-screen transition-[padding] duration-200 ease-in-out',
+          collapsed ? 'lg:pl-[68px]' : 'lg:pl-64',
+        )}
+      >
+        <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border px-4 lg:px-6 py-2.5 flex items-center gap-2 sm:gap-3">
+          <button
+            className="hidden lg:inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            onClick={() => setCollapsed((v) => !v)}
+            aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
+          >
+            {collapsed ? (
+              <PanelLeftOpen className="h-5 w-5" />
+            ) : (
+              <PanelLeftClose className="h-5 w-5" />
+            )}
+          </button>
+          <button
+            className="lg:hidden inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Abrir menu"
+          >
+            <PanelLeftOpen className="h-5 w-5" />
+          </button>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-50 border border-violet-200 text-violet-700 text-xs font-extrabold shadow-2xs">
-              <Star className="w-4 h-4 text-violet-600 fill-violet-500" />
-              <span>{xp} XP</span>
-            </div>
+          <h2 className="hidden sm:block text-base font-bold tracking-tight truncate">
+            {currentTitle}
+          </h2>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 outline-none focus:ring-2 focus:ring-violet-500 rounded-full">
-                  <Avatar className="w-9 h-9 border border-violet-200 cursor-pointer">
-                    <AvatarFallback className="bg-gradient-to-tr from-violet-600 to-indigo-600 text-white font-bold text-xs">
-                      {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'M'}
-                    </AvatarFallback>
-                  </Avatar>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-48 bg-white border border-slate-200 shadow-elevation"
+          <div className="flex-1" />
+
+          <GlobalSearch
+            materias={searchData.materias}
+            topicos={searchData.topicos}
+            conteudos={searchData.conteudos}
+          />
+
+          {/* alternância de tema */}
+          <button
+            className="inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            onClick={toggleTheme}
+            aria-label={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+          >
+            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </button>
+
+          {/* sino de notificações com contagem de não-lidas */}
+          <button
+            className="relative inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            onClick={() => navigate('/notificacoes')}
+            aria-label={`Notificações (${unread} não lidas)`}
+          >
+            <Bell className="h-5 w-5" />
+            {unread > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                {unread > 9 ? '9+' : unread}
+              </span>
+            )}
+          </button>
+
+          {/* perfil do estudante logado */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <Avatar className="w-9 h-9 border border-border cursor-pointer">
+                  <AvatarFallback className="bg-primary text-primary-foreground font-bold text-xs">
+                    {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'E'}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="flex flex-col">
+                <span className="text-sm font-semibold text-foreground">
+                  {user?.name || 'Estudante'}
+                </span>
+                <span className="text-xs font-normal text-muted-foreground truncate">
+                  {user?.email}
+                </span>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => navigate('/configuracoes')}
               >
-                <DropdownMenuLabel className="text-xs text-slate-500 font-semibold">
-                  {user?.email || 'estudante@medicina.br'}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-red-600 text-xs font-semibold cursor-pointer flex items-center gap-2"
-                  onClick={() => {
-                    signOut()
-                    navigate('/login')
-                  }}
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Sair da conta</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                Configurações
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive cursor-pointer"
+                onClick={() => {
+                  signOut()
+                  navigate('/login')
+                }}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sair da conta
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </header>
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8 animate-fade-in max-w-7xl mx-auto w-full">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8 animate-fade-in w-full max-w-7xl mx-auto">
           <Outlet />
         </main>
       </div>
 
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-2 py-2 flex items-center justify-around z-30 shadow-lg">
-        {navItems.map((item) => {
-          const Icon = item.icon
-          const isActive = location.pathname === item.path
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                'flex flex-col items-center gap-1 px-2 py-1.5 rounded-xl transition-all duration-200 text-xs font-bold',
-                isActive
-                  ? 'text-violet-700 scale-105 -translate-y-0.5'
-                  : 'text-slate-500 hover:text-slate-700',
-              )}
-            >
-              <div
-                className={cn(
-                  'p-1.5 rounded-xl transition-colors',
-                  isActive ? 'bg-violet-100 text-violet-700' : 'bg-transparent',
-                )}
-              >
-                <Icon className="w-5 h-5" />
-              </div>
-              <span>{item.label}</span>
-            </Link>
-          )
-        })}
-      </nav>
+      {xp > 0 && (
+        <div className="hidden lg:flex fixed bottom-4 right-4 z-20 items-center gap-1.5 rounded-full bg-card border border-border px-3 py-1.5 text-xs font-bold shadow-subtle">
+          <Zap className="h-3.5 w-3.5 text-amber-500" />
+          {xp} XP
+        </div>
+      )}
     </div>
   )
 }
