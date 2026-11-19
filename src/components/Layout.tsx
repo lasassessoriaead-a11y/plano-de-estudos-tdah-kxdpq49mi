@@ -92,20 +92,20 @@ export default function Layout() {
   if (!user) return <NexoraSplash message="Carregando sua jornada..." />
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="flex">
         <LayoutSidebar open={isMobile ? sidebarOpen : true} onClose={() => setSidebarOpen(false)} />
 
         <div className="flex-1 min-w-0 flex flex-col min-h-screen">
           {/* Topbar */}
-          <header className="sticky top-0 z-30 border-b border-white/10 bg-[#050505]/85 backdrop-blur-md">
+          <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-md">
             <div className="flex items-center gap-3 px-4 py-3">
               {isMobile && (
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setSidebarOpen(true)}
-                  className="text-slate-300 hover:text-white hover:bg-white/10 shrink-0"
+                  className="text-muted-foreground hover:text-foreground hover:bg-accent shrink-0"
                   aria-label="Abrir menu"
                 >
                   <Menu className="w-5 h-5" />
@@ -119,7 +119,7 @@ export default function Layout() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="relative text-slate-400 hover:text-white hover:bg-white/10"
+                  className="relative text-muted-foreground hover:text-foreground hover:bg-accent"
                   onClick={() => navigate('/notificacoes')}
                   aria-label="Notificações"
                 >
@@ -129,16 +129,16 @@ export default function Layout() {
                   )}
                 </Button>
                 <div className="hidden md:block text-right mr-1">
-                  <p className="text-sm font-bold text-white leading-tight truncate max-w-[160px]">
+                  <p className="text-sm font-bold text-foreground leading-tight truncate max-w-[160px]">
                     {nome}
                   </p>
-                  <p className="text-[11px] text-slate-500 font-medium">Estudante</p>
+                  <p className="text-[11px] text-muted-foreground font-medium">Estudante</p>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleLogout}
-                  className="text-slate-400 hover:text-red-400 hover:bg-red-500/10"
+                  className="text-muted-foreground hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/10"
                   aria-label="Sair"
                 >
                   <LogOut className="w-5 h-5" />
@@ -147,8 +147,8 @@ export default function Layout() {
             </div>
             {isMobile && (
               <div className="px-4 pb-3">
-                <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3">
-                  <Search className="w-4 h-4 text-slate-500 shrink-0" />
+                <div className="flex items-center gap-2 rounded-xl border border-border bg-muted px-3">
+                  <Search className="w-4 h-4 text-muted-foreground shrink-0" />
                   <input
                     type="text"
                     readOnly
@@ -158,7 +158,7 @@ export default function Layout() {
                     }}
                     onClick={() => setSidebarOpen(true)}
                     placeholder="Buscar no menu..."
-                    className="w-full bg-transparent py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none"
+                    className="w-full bg-transparent py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                   />
                 </div>
               </div>
