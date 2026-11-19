@@ -11,10 +11,19 @@ import {
   analisarResultadoIa,
   getTentativaIa,
   parseQuestoesProva,
-  type AnaliseIaResultado,
+  type AnaliseIa,
   type QuestaoProva,
 } from '@/services/central-simulados'
 import ResultadoDetalhes from '@/components/simulados/ResultadoDetalhes'
+
+interface ResultadoJson {
+  total: number
+  acertos: number
+  erros: number
+  brancos: number
+  pctAcerto: number
+  porMateria: { materia: string; total: number; acertos: number }[]
+}
 
 export default function ResultadoIaPage() {
   const { id } = useParams<{ id: string }>()
@@ -26,7 +35,7 @@ export default function ResultadoIaPage() {
   const [prova, setProva] = useState<Awaited<
     ReturnType<typeof import('@/services/central-simulados').getProvaIa>
   > | null>(null)
-  const [analise, setAnalise] = useState<AnaliseIaResultado | null>(null)
+  const [analise, setAnalise] = useState<AnaliseIa | null>(null)
   const [analisando, setAnalisando] = useState(false)
 
   useEffect(() => {
@@ -51,21 +60,17 @@ export default function ResultadoIaPage() {
 
   const questoes: QuestaoProva[] = useMemo(() => (prova ? parseQuestoesProva(prova) : []), [prova])
 
-  const resultado = useMemo(() => {
+  const resultado = useMemo<ResultadoJson | null>(() => {
     if (!tentativa?.resultado_json) return null
     const raw =
       typeof tentativa.resultado_json === 'string'
         ? tentativa.resultado_json
         : JSON.stringify(tentativa.resultado_json)
     try {
-      return JSON.parse(raw) as {
-        total: number
-        acertos: number
-        erros: number
-        brancos: number
-        pctAcerto: number
-        porMateria: Record<string, { total: number; acertos: number }>
-        porOrigem: Record<string, number>
+      const v = JSON.parse(raw) as ResultadoJson
+      return {
+        ...v,
+        porMateria: Array.isArray(v.porMateria) ? v.porMateria : [],
       }
     } catch {
       return null
@@ -105,12 +110,24 @@ export default function ResultadoIaPage() {
     )
   }
 
-  const questoesErradas = questoes.filter((q) => {
+  const mapaRespostas: Record<string, string> = (() => {
     const r = tentativa.respostas_json
-    const map =
-      typeof r === 'string' ? (JSON.parse(r || '{}') as Record<string, string>) : (r ?? {})
-    return q.gabarito && map[q.id] !== undefined && map[q.id] !== q.gabarito
-  })
+    if (typeof r === 'string') {
+      try {
+        return JSON.parse(r || '{}') as Record<string, string>
+      } catch {
+        return {}
+      }
+    }
+    return r ?? {}
+  })()
+
+  const questoesErradas = questoes.filter(
+    (q) =>
+      q.gabarito !== undefined &&
+      mapaRespostas[q.id] !== undefined &&
+      Number(mapaRespostas[q.id]) !== Number(q.gabarito),
+  )
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4 md:p-6">
@@ -155,15 +172,15 @@ export default function ResultadoIaPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {Object.entries(resultado.porMateria ?? {}).map(([materia, d]) => (
-            <div key={materia}>
+          {resultado.porMateria.map((d) => (
+            <div key={d.materia}>
               <div className="flex justify-between text-sm">
-                <span>{materia}</span>
+                <span>{d.materia}</span>
                 <span className="text-muted-foreground">
                   {d.acertos}/{d.total}
                 </span>
               </div>
-              <Progress value={(d.acertos / d.total) * 100} className="mt-1" />
+              <Progress value={d.total ? (d.acertos / d.total) * 100 : 0} className="mt-1" />
             </div>
           ))}
         </CardContent>
@@ -193,8 +210,17 @@ export default function ResultadoIaPage() {
         <CardContent className="space-y-3">
           {analise ? (
             <>
-              <p className="whitespace-pre-wrap text-sm">{analise.resumo}</p>
-              {analise.padroes?.length > 0 && (
+              {analise.erros_principais?.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium">Erros principais</p>
+                  <ul className="mt-1 list-inside list-disc text-sm text-muted-foreground">
+                    {analise.erros_principais.map((p, i) => (
+                      <li key={i}>{p}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {(analise.padroes?.length ?? 0) > 0 && (
                 <div>
                   <p className="text-sm font-medium">Padrões de erro</p>
                   <ul className="mt-1 list-inside list-disc text-sm text-muted-foreground">
@@ -204,7 +230,7 @@ export default function ResultadoIaPage() {
                   </ul>
                 </div>
               )}
-              {analise.recomendacoes?.length > 0 && (
+              {(analise.recomendacoes?.length ?? 0) > 0 && (
                 <div>
                   <p className="text-sm font-medium">Recomendações</p>
                   <ul className="mt-1 list-inside list-disc text-sm text-muted-foreground">
@@ -214,10 +240,19 @@ export default function ResultadoIaPage() {
                   </ul>
                 </div>
               )}
-              {analise.sugestao_nova_prova && (
+              {analise.nova_prova_direcionada && (
                 <Button
                   onClick={() =>
-                    navigate('/simulados/criar', { state: analise.sugestao_nova_prova })
+                    navigate('/simulados/criar', {
+                      state: {
+                        modo: 'inedito_ia',
+                        materias: analise.nova_prova_direcionada?.materias ?? [],
+                        qtd: analise.nova_prova_direcionada?.qtd_sugerida ?? 10,
+                        dificuldade: analise.nova_prova_direcionada?.dificuldade ?? 'medio',
+                        titulo: 'Prova direcionada pela IA',
+                        motivo: 'Baseada nos seus erros na última prova.',
+                      },
+                    })
                   }
                 >
                   <Sparkles className="mr-2 h-4 w-4" /> Criar prova direcionada
