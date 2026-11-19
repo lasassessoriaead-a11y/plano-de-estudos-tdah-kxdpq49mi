@@ -4,19 +4,19 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Sparkles, Upload, Loader2, FileText } from 'lucide-react'
-import { analisarEdital, type EditalAnalise } from '@/services/central-simulados'
+import { createEdital, processarEdital } from '@/services/central-simulados'
 
 export default function EditaisPage() {
   const navigate = useNavigate()
   const inputRef = useRef<HTMLInputElement>(null)
-  const [texto, setTexto] = useState('')
-  const [analise, setAnalise] = useState<EditalAnalise | null>(null)
-  const [processando, setProcessando] = useState(false)
-  const [arquivoNome, setArquivoNome] = useState('')
   const [arquivoFile, setArquivoFile] = useState<File | null>(null)
+  const [arquivoNome, setArquivoNome] = useState('')
+  const [orgao, setOrgao] = useState('')
+  const [analise, setAnalise] = useState<Awaited<ReturnType<typeof processarEdital>> | null>(null)
+  const [processando, setProcessando] = useState(false)
 
   const escolherArquivo = (f: File | null) => {
     if (!f) return
@@ -26,27 +26,34 @@ export default function EditaisPage() {
     }
     setArquivoFile(f)
     setArquivoNome(f.name)
+    setAnalise(null)
   }
 
   const processar = async () => {
-    if (!arquivoFile && !texto.trim()) {
-      toast.error('Envie o PDF do edital ou cole o texto das disciplinas')
+    if (!arquivoFile) {
+      toast.error('Escolha o PDF do edital para analisar')
       return
     }
     setProcessando(true)
     setAnalise(null)
+    let editalId = ''
     try {
-      // PDF: enviaremos apenas o nome + pedido de extração pelo hook
-      // (documento em si é lido server-side quando disponível; texto colado tem prioridade)
-      const res = await analisarEdital({
-        nome_arquivo: arquivoNome || undefined,
-        texto: texto.trim() || undefined,
-        tem_pdf: !!arquivoFile,
-      })
+      const edital = await createEdital(
+        arquivoNome.replace(/\.pdf$/i, '') || 'Edital',
+        arquivoFile,
+        orgao.trim() || undefined,
+      )
+      editalId = edital.id
+      const res = await processarEdital(edital.id)
       setAnalise(res)
       toast.success('Edital analisado!')
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Erro ao analisar o edital')
+      toast.error(
+        e instanceof Error ? e.message : 'Erro ao analisar o edital. Tente novamente mais tarde.',
+      )
+      if (editalId) {
+        toast.info('O PDF ficou salvo em Editais — você pode processá-lo de novo mais tarde.')
+      }
     } finally {
       setProcessando(false)
     }
@@ -66,7 +73,7 @@ export default function EditaisPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">1. Envie o edital (PDF) ou cole o texto</CardTitle>
+          <CardTitle className="text-base">1. Envie o edital em PDF</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <input
@@ -86,17 +93,16 @@ export default function EditaisPage() {
           </button>
 
           <div className="grid gap-1.5">
-            <Label htmlFor="edital-texto">Ou cole o trecho do edital (conteúdo programático)</Label>
-            <Textarea
-              id="edital-texto"
-              rows={6}
-              placeholder="Ex.: CONHECIMENTOS BÁSICOS: Língua Portuguesa… CONHECIMENTOS ESPECÍFICOS:…"
-              value={texto}
-              onChange={(e) => setTexto(e.target.value)}
+            <Label htmlFor="edital-orgao">Órgão (opcional, para identificar o edital)</Label>
+            <Input
+              id="edital-orgao"
+              placeholder="Ex.: TRT 4ª Região, Prefeitura de São Paulo…"
+              value={orgao}
+              onChange={(e) => setOrgao(e.target.value)}
             />
           </div>
 
-          <Button onClick={processar} disabled={processando}>
+          <Button onClick={processar} disabled={processando || !arquivoFile}>
             {processando ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -114,38 +120,31 @@ export default function EditaisPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <p className="text-sm font-medium">{analise.orgao || 'Órgão não identificado'}</p>
-              <p className="text-xs text-muted-foreground">
-                {analise.cargo || 'Cargo não identificado'}
-              </p>
+              {orgao.trim() && <p className="text-sm font-medium">{orgao.trim()}</p>}
+              {analise.cargo && <p className="text-xs text-muted-foreground">{analise.cargo}</p>}
               {analise.escolaridade && (
                 <Badge variant="secondary" className="mt-1">
                   {analise.escolaridade}
                 </Badge>
               )}
             </div>
-            <div className="flex flex-wrap gap-2">
-              {(analise.disciplinas ?? []).map((d, i) => (
-                <Badge key={i} variant="outline">
-                  {d.nome}
-                  {d.peso ? ` (peso ${d.peso})` : ''}
-                </Badge>
+            <div className="space-y-2">
+              {analise.disciplinas.map((d, i) => (
+                <div key={i} className="rounded-lg border p-2.5">
+                  <p className="text-sm font-medium">{d.nome}</p>
+                  {d.assuntos.length > 0 && (
+                    <p className="text-xs text-muted-foreground">{d.assuntos.join(' · ')}</p>
+                  )}
+                </div>
               ))}
             </div>
-            {(analise.observacoes ?? []).length > 0 && (
-              <ul className="list-inside list-disc text-xs text-muted-foreground">
-                {analise.observacoes.map((o, i) => (
-                  <li key={i}>{o}</li>
-                ))}
-              </ul>
-            )}
             <Button
               onClick={() =>
                 navigate('/simulados/criar', {
                   state: {
-                    titulo: `Plano de questões — ${analise.orgao || 'edital'}`,
+                    titulo: `Plano de questões — ${orgao.trim() || analise.cargo || 'edital'}`,
                     motivo: 'Baseado no edital que você enviou',
-                    materias: (analise.disciplinas ?? []).map((d) => d.nome),
+                    materias: analise.disciplinas.map((d) => d.nome),
                     modo: 'base_provas_reais' as const,
                   },
                 })
