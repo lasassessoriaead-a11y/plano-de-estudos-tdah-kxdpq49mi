@@ -1,12 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { toast } from 'react-hot-toast'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Select,
@@ -17,7 +14,6 @@ import {
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { Check, Loader2, Sparkles } from 'lucide-react'
-import CriarProvaDialog from '@/components/simulados/CriarProvaDialog'
 import {
   listBancas,
   listInstituicoes,
@@ -292,21 +288,6 @@ export default function CriarProvaPage() {
           {gerando ? 'Gerando…' : 'Gerar prova'}
         </Button>
       </div>
-
-      {/* diálogo reutilizado quando o usuário chega sem recomendação */}
-      <CriarProvaDialog
-        open={false}
-        onOpenChange={() => {}}
-        onProvaCriada={(id) => navigate(`/simulados/prova-ia/${id}`)}
-        inicial={{
-          modo,
-          instituicao,
-          banca,
-          materias,
-          qtd,
-          dificuldade: dificuldade as 'facil' | 'medio' | 'dificil' | 'todas',
-        }}
-      />
     </div>
   )
 }

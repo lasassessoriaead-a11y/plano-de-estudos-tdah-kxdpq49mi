@@ -22,6 +22,15 @@ import Notificacoes from './pages/Notificacoes'
 import Simulados from './pages/Simulados'
 import SimuladoProva from './pages/SimuladoProva'
 import SimuladoResultado from './pages/SimuladoResultado'
+import SimuladosHub from './pages/SimuladosHub'
+import CriarProvaPage from './pages/CriarProvaPage'
+import ProvaIaPage from './pages/ProvaIaPage'
+import ResultadoIaPage from './pages/ResultadoIaPage'
+import HistoricoSimulados from './pages/HistoricoSimulados'
+import BancoQuestoes from './pages/BancoQuestoes'
+import CatalogoInstituicoes from './pages/CatalogoInstituicoes'
+import PaginaInstituicao from './pages/PaginaInstituicao'
+import EditaisPage from './pages/EditaisPage'
 import ModuloEmConstrucao from './pages/ModuloEmConstrucao'
 import NotFound from './pages/NotFound'
 import ResponsavelLayout from './components/ResponsavelLayout'
@@ -111,9 +120,34 @@ const App = () => (
               />
               <Route path="/notificacoes" element={<Notificacoes />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
-              <Route path="/simulados" element={<Simulados />} />
-              <Route path="/simulados/prova/:simuladoId" element={<SimuladoProva />} />
-              <Route path="/simulados/resultado/:tentativaId" element={<SimuladoResultado />} />
+              {/* Central de Simulados — hub novo */}
+              <Route path="/simulados" element={<SimuladosHub />} />
+              {/* Fluxo ENEM (intacto) sob /simulados/enem, com redirects das rotas antigas */}
+              <Route path="/simulados/enem" element={<Simulados />} />
+              <Route path="/simulados/enem/prova/:simuladoId" element={<SimuladoProva />} />
+              <Route
+                path="/simulados/enem/resultado/:tentativaId"
+                element={<SimuladoResultado />}
+              />
+              <Route
+                path="/simulados/prova/:simuladoId"
+                element={<Navigate to="/simulados/enem" replace />}
+              />
+              <Route
+                path="/simulados/resultado/:tentativaId"
+                element={<Navigate to="/simulados/enem" replace />}
+              />
+              {/* Provas por IA / histórico / banco / catálogos / editais */}
+              <Route path="/simulados/criar" element={<CriarProvaPage />} />
+              <Route path="/simulados/prova-ia/:id" element={<ProvaIaPage />} />
+              <Route path="/simulados/resultado-ia/:id" element={<ResultadoIaPage />} />
+              <Route path="/simulados/historico" element={<HistoricoSimulados />} />
+              <Route path="/simulados/banco" element={<BancoQuestoes />} />
+              <Route path="/simulados/vestibulares" element={<CatalogoInstituicoes />} />
+              <Route path="/simulados/concursos" element={<CatalogoInstituicoes />} />
+              <Route path="/simulados/instituicao/:id" element={<PaginaInstituicao />} />
+              <Route path="/simulados/editais" element={<EditaisPage />} />
+              <Route path="/simulados/provas-anteriores" element={<CatalogoInstituicoes />} />
             </Route>
           </Route>
 

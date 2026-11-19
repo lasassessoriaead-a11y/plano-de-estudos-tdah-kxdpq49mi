@@ -1,23 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { toast } from 'react-hot-toast'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Progress } from '@/components/ui/progress'
 import { Star, StarOff, History as HistoryIcon, RefreshCw, Scale, PlayCircle } from 'lucide-react'
 import {
-  favoritarProva,
-  getProvaIa,
+  alternarFavorita,
   listProvasIa,
   listTentativasIa,
-  parseQuestoesProva,
   type ProvaIaRecord,
   type TentativaIaRecord,
 } from '@/services/central-simulados'
-import { cn } from '@/lib/utils'
 
 interface TentativaComProva {
   tentativa: TentativaIaRecord
@@ -28,7 +24,7 @@ export default function HistoricoSimulados() {
   const navigate = useNavigate()
   const [itens, setItens] = useState<TentativaComProva[]>([])
   const [carregando, setCarregando] = useState(true)
-  const [provas, setProvas] = useState<ProvaIaRecord[]>([])
+
   const [comparar, setComparar] = useState<TentativaComProva[] | null>(null)
 
   useEffect(() => {
@@ -36,11 +32,10 @@ export default function HistoricoSimulados() {
     Promise.all([listProvasIa(), listTentativasIa()])
       .then(([ps, ts]) => {
         if (!alive) return
-        setProvas(ps)
         const mapa = new Map(ps.map((p) => [p.id, p]))
         setItens(
           ts
-            .map((t) => ({ tentativa: t, prova: mapa.get(t.prova_id) ?? null }))
+            .map((t) => ({ tentativa: t, prova: mapa.get(t.prova_ia_id) ?? null }))
             .filter((x): x is TentativaComProva => x.prova !== null),
         )
       })
@@ -51,13 +46,25 @@ export default function HistoricoSimulados() {
     }
   }, [])
 
-  const toggleFavorito = useCallback(async (prova: ProvaIaRecord) => {
-    const novo = !prova.favorito
-    setProvas((prev) => prev.map((p) => (p.id === prova.id ? { ...p, favorito: novo } : p)))
+  const toggleFavorito = useCallback(async (x: TentativaComProva) => {
+    const novo = !x.tentativa.favorita
+    setItens((prev) =>
+      prev.map((i) =>
+        i.tentativa.id === x.tentativa.id
+          ? { ...i, tentativa: { ...i.tentativa, favorita: novo } }
+          : i,
+      ),
+    )
     try {
-      await favoritarProva(prova.id, novo)
+      await alternarFavorita(x.tentativa)
     } catch {
-      setProvas((prev) => prev.map((p) => (p.id === prova.id ? { ...p, favorito: !novo } : p)))
+      setItens((prev) =>
+        prev.map((i) =>
+          i.tentativa.id === x.tentativa.id
+            ? { ...i, tentativa: { ...i.tentativa, favorita: !novo } }
+            : i,
+        ),
+      )
       toast.error('Erro ao favoritar')
     }
   }, [])
@@ -103,10 +110,6 @@ export default function HistoricoSimulados() {
       </div>
     )
   }
-
-  const provasSalvas = provas.filter(
-    (p) => !itens.some((x) => x.prova?.id === p.id && x.tentativa.status === 'em_andamento'),
-  )
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4 md:p-6">
@@ -171,11 +174,11 @@ export default function HistoricoSimulados() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => x.prova && toggleFavorito(x.prova)}
+                      onClick={() => toggleFavorito(x)}
                       className="shrink-0"
-                      aria-label={x.prova?.favorito ? 'Desfavoritar' : 'Favoritar'}
+                      aria-label={x.tentativa.favorita ? 'Desfavoritar' : 'Favoritar'}
                     >
-                      {x.prova?.favorito ? (
+                      {x.tentativa.favorita ? (
                         <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                       ) : (
                         <StarOff className="h-5 w-5 text-muted-foreground" />
@@ -189,7 +192,7 @@ export default function HistoricoSimulados() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => navigate(`/simulados/resultado/${x.tentativa.id}`)}
+                      onClick={() => navigate(`/simulados/resultado-ia/${x.tentativa.id}`)}
                     >
                       Revisar erros
                     </Button>
@@ -206,34 +209,6 @@ export default function HistoricoSimulados() {
             ))
         )}
       </section>
-
-      {/* provas favoritas sem tentativa */}
-      {provasSalvas.filter((p) => p.favorito).length > 0 && (
-        <section className="space-y-2">
-          <h2 className="text-sm font-semibold">Provas favoritas</h2>
-          {provasSalvas
-            .filter((p) => p.favorito)
-            .map((p) => (
-              <Card key={p.id}>
-                <CardContent className="flex items-center justify-between p-4">
-                  <p className="text-sm font-medium">{p.titulo}</p>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => refazer(p)}>
-                      Abrir
-                    </Button>
-                    <button
-                      type="button"
-                      onClick={() => toggleFavorito(p)}
-                      aria-label="Desfavoritar"
-                    >
-                      <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    </button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-        </section>
-      )}
 
       {/* diálogo de comparação */}
       <Dialog open={comparar !== null} onOpenChange={(open) => !open && setComparar(null)}>

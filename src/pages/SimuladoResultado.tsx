@@ -86,7 +86,7 @@ export default function SimuladoResultado() {
           {erro || 'Resultado não encontrado.'}
         </p>
         <Button asChild variant="outline" className="rounded-xl font-bold">
-          <Link to="/simulados">
+          <Link to="/simulados/enem">
             <ArrowLeft className="w-4 h-4 mr-1" /> Voltar aos simulados
           </Link>
         </Button>
@@ -131,7 +131,7 @@ export default function SimuladoResultado() {
           <p className="text-sm text-slate-600 font-medium mt-0.5">{simTitulo}</p>
         </div>
         <Button asChild variant="outline" className="rounded-xl font-bold">
-          <Link to="/simulados">
+          <Link to="/simulados/enem">
             <ArrowLeft className="w-4 h-4 mr-1" /> Simulados
           </Link>
         </Button>

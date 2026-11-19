@@ -349,7 +349,7 @@ export default function SimuladosHub() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => navigate(`/simulados/resultado/${t.id}`)}
+                  onClick={() => navigate(`/simulados/resultado-ia/${t.id}`)}
                 >
                   Ver resultado
                 </Button>

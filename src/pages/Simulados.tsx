@@ -223,7 +223,7 @@ export default function Simulados() {
         title: 'Simulado criado!',
         description: incluirRedacao ? 'Boa prova — e boa redação!' : 'Boa prova!',
       })
-      window.location.href = `/simulados/prova/${sim.id}`
+      window.location.href = `/simulados/enem/prova/${sim.id}`
     } catch {
       toast({
         title: 'Erro',
@@ -254,7 +254,7 @@ export default function Simulados() {
         questoesIds: qs.map((q) => q.id),
         duracaoMin: 30,
       })
-      window.location.href = `/simulados/prova/${sim.id}`
+      window.location.href = `/simulados/enem/prova/${sim.id}`
     } catch {
       toast({
         title: 'Erro',
@@ -289,7 +289,7 @@ export default function Simulados() {
         duracaoMin: Math.max(5, Math.min(600, duracao)),
       })
       toast({ title: 'Simulado criado!', description: 'Boa prova!' })
-      window.location.href = `/simulados/prova/${sim.id}`
+      window.location.href = `/simulados/enem/prova/${sim.id}`
     } catch {
       toast({
         title: 'Erro',
@@ -437,7 +437,7 @@ export default function Simulados() {
               </p>
             </div>
             <Button asChild className="rounded-xl font-bold bg-violet-600 hover:bg-violet-700">
-              <Link to={`/simulados/prova/${emAndamento.simulado_id}`}>Continuar</Link>
+              <Link to={`/simulados/enem/prova/${emAndamento.simulado_id}`}>Continuar</Link>
             </Button>
           </CardContent>
         </Card>
@@ -570,7 +570,7 @@ export default function Simulados() {
             return (
               <Link
                 key={t.id}
-                to={`/simulados/resultado/${t.id}`}
+                to={`/simulados/enem/resultado/${t.id}`}
                 className="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
               >
                 <div className="min-w-0">
@@ -614,7 +614,7 @@ export default function Simulados() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <Button asChild size="sm" className="rounded-lg font-bold">
-                    <Link to={`/simulados/prova/${s.id}`}>Fazer</Link>
+                    <Link to={`/simulados/enem/prova/${s.id}`}>Fazer</Link>
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>

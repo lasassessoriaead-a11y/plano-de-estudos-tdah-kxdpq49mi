@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { toast } from 'react-hot-toast'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -45,7 +45,7 @@ export default function ResultadoIaPage() {
       getTentativaIa(id),
       import('@/services/central-simulados').then((m) => m.getProvaIa),
     ])
-      .then(([t, getProva]) => Promise.all([t, getProva(t.prova_id)]))
+      .then(([t, getProva]) => Promise.all([t, getProva(t.prova_ia_id)]))
       .then(([t, p]) => {
         if (!alive) return
         setTentativa(t)

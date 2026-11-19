@@ -38,9 +38,9 @@ export default function ResultadoDetalhes({ questao, numero }: Props) {
             ))}
           </ul>
         )}
-        {questao.resolucao_comentada && (
+        {questao.resolucao && (
           <p className="mt-2 rounded-md bg-muted p-2 text-sm">
-            <span className="font-medium">Resolução comentada:</span> {questao.resolucao_comentada}
+            <span className="font-medium">Resolução comentada:</span> {questao.resolucao}
           </p>
         )}
       </div>

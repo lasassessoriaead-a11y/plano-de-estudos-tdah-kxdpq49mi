@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { toast } from 'react-hot-toast'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
 import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
@@ -14,7 +13,6 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Progress } from '@/components/ui/progress'
 import {
   Select,
   SelectContent,
@@ -23,16 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
-import { Switch } from '@/components/ui/switch'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  gerarProvaIa,
-  getTentativaIaEmAndamento,
-  listTentativasIa,
-  MODO_LABEL,
-  type ModoProva,
-  type Recomendacao,
-} from '@/services/central-simulados'
+import { gerarProvaIa, MODO_LABEL, MODO_DESC, type ModoProva } from '@/services/central-simulados'
 import { cn } from '@/lib/utils'
 
 const DIFICULDADES = ['facil', 'medio', 'dificil'] as const

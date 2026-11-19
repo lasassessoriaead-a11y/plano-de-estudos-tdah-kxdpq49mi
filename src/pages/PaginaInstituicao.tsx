@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -17,7 +17,6 @@ import { BookOpen, FileText, Target, TrendingUp } from 'lucide-react'
 export default function PaginaInstituicao() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
   const [inst, setInst] = useState<Awaited<ReturnType<typeof getInstituicao>> | null>(null)
   const [provasAnteriores, setProvasAnteriores] = useState<ProvaAnteriorRecord[]>([])
   const [meusSimulados, setMeusSimulados] = useState<ProvaIaRecord[]>([])

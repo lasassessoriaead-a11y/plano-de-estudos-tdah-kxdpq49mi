@@ -180,7 +180,7 @@ export default function Prova() {
           ? { redacaoTexto: textoRedacaoRef.current }
           : {}),
       })
-      navigate(`/simulados/resultado/${tentativa.id}`)
+      navigate(`/simulados/enem/resultado/${tentativa.id}`)
     } catch {
       setFinalizando(false)
       setConfirmarFim(false)
@@ -231,7 +231,7 @@ export default function Prova() {
       <div className="space-y-4">
         <p className="text-sm text-destructive font-medium">{erro || 'Simulado não encontrado.'}</p>
         <Button asChild variant="outline" className="rounded-xl font-bold">
-          <Link to="/simulados">
+          <Link to="/simulados/enem">
             <ArrowLeft className="w-4 h-4 mr-1" /> Voltar aos simulados
           </Link>
         </Button>
@@ -245,7 +245,7 @@ export default function Prova() {
       <Card className="sticky top-[60px] z-10">
         <CardContent className="pt-3 pb-3 flex items-center gap-3 flex-wrap">
           <Link
-            to="/simulados"
+            to="/simulados/enem"
             className="inline-flex items-center gap-1 text-sm font-bold text-slate-600 hover:text-slate-900"
           >
             <ArrowLeft className="w-4 h-4" /> Sair

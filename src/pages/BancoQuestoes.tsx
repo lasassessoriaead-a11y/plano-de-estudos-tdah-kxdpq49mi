@@ -78,10 +78,9 @@ export default function BancoQuestoes() {
 
   const mostrarAlternativa = useCallback((q: QuestaoExpandidaRecord) => {
     try {
-      const alts =
-        typeof q.alternativas_json === 'string'
-          ? (JSON.parse(q.alternativas_json) as string[])
-          : (q.alternativas_json as string[] | undefined)
+      const raw =
+        typeof q.alternativas === 'string' ? q.alternativas : JSON.stringify(q.alternativas ?? [])
+      const alts = JSON.parse(raw) as string[]
       return Array.isArray(alts) ? alts : []
     } catch {
       return []
@@ -234,7 +233,7 @@ export default function BancoQuestoes() {
                       ))}
                     </ul>
                   )}
-                  {q.gabarito !== undefined && q.gabarito !== '' && (
+                  {q.gabarito !== undefined && q.gabarito !== null && (
                     <p className="text-sm">
                       <span className="font-medium text-green-600">Gabarito:</span>{' '}
                       {q.tipo_questao === 'certo_errado'
@@ -246,9 +245,9 @@ export default function BancoQuestoes() {
                           : String.fromCharCode(65 + Number(q.gabarito))}
                     </p>
                   )}
-                  {q.resolucao_comentada && (
+                  {q.resolucao && (
                     <p className="rounded-md bg-muted p-2 text-sm">
-                      <span className="font-medium">Resolução:</span> {q.resolucao_comentada}
+                      <span className="font-medium">Resolução:</span> {q.resolucao}
                     </p>
                   )}
                 </CardContent>

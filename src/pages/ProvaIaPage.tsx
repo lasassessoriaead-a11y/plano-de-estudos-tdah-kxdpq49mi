@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { toast } from 'react-hot-toast'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -181,7 +181,7 @@ export default function ProvaIaPage() {
         tempoUsadoSeg: resultado.tempoSeg,
       })
       toast.success('Prova finalizada!')
-      navigate(`/simulados/resultado/${tentativa.id}`)
+      navigate(`/simulados/resultado-ia/${tentativa.id}`)
     } catch {
       toast.error('Erro ao finalizar a prova')
       setConfirmarFim(false)
@@ -207,7 +207,7 @@ export default function ProvaIaPage() {
     return (
       <div className="mx-auto max-w-3xl p-6">
         <p>Prova não encontrada ou sem questões.</p>
-        <Button variant="outline" className="mt-4" onClick={() => navigate('/simulados')}>
+        <Button variant="outline" className="mt-4" onClick={() => navigate('/simulados/criar')}>
           Voltar
         </Button>
       </div>
