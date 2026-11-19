@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, BookOpen, FolderTree, X } from 'lucide-react'
+import { Search, BookOpen, FolderTree, ClipboardList, X } from 'lucide-react'
 
 export interface GlobalSearchData {
   materias: { id: string; nome: string }[]
@@ -44,6 +44,14 @@ export default function GlobalSearch({ materias, topicos }: Props) {
       if (t.nome.toLowerCase().includes(q))
         out.push({ key: `t-${t.id}`, label: t.nome, sub: 'Tópico', to: '/plano', icon: FolderTree })
     }
+    if ('simulados'.includes(q) || 'simulado enem'.includes(q))
+      out.push({
+        key: 's-simulados',
+        label: 'Simulados ENEM',
+        sub: 'Página',
+        to: '/simulados',
+        icon: ClipboardList,
+      })
     return out.slice(0, 8)
   }, [query, materias, topicos])
 

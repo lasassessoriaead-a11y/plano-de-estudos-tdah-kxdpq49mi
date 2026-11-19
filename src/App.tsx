@@ -15,6 +15,9 @@ import Chat from './pages/Chat'
 import Dashboard from './pages/Dashboard'
 import Configuracoes from './pages/Configuracoes'
 import Notificacoes from './pages/Notificacoes'
+import Simulados from './pages/Simulados'
+import SimuladoProva from './pages/SimuladoProva'
+import SimuladoResultado from './pages/SimuladoResultado'
 import Login from './pages/Login'
 import Cadastro from './pages/Cadastro'
 import NotFound from './pages/NotFound'
@@ -45,6 +48,9 @@ const App = () => (
               <Route path="/mapas" element={<MapasMentais />} />
               <Route path="/notificacoes" element={<Notificacoes />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
+              <Route path="/simulados" element={<Simulados />} />
+              <Route path="/simulados/prova/:simuladoId" element={<SimuladoProva />} />
+              <Route path="/simulados/resultado/:tentativaId" element={<SimuladoResultado />} />
             </Route>
           </Route>
 

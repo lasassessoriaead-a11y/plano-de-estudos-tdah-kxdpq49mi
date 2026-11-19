@@ -7,6 +7,7 @@ import {
   XCircle,
   MessageCircle,
   Brain,
+  ClipboardList,
   Settings,
   PanelLeftClose,
   PanelLeftOpen,
@@ -27,6 +28,7 @@ export const navItems: SidebarNavItem[] = [
   { to: '/plano', label: 'Plano de Estudos', icon: Layers },
   { to: '/erros', label: 'Banco de Erros', icon: XCircle },
   { to: '/mapas', label: 'Mapas Mentais', icon: Brain },
+  { to: '/simulados', label: 'Simulados ENEM', icon: ClipboardList },
   { to: '/chat', label: 'Chat', icon: MessageCircle },
   { to: '/configuracoes', label: 'Configurações', icon: Settings },
 ]

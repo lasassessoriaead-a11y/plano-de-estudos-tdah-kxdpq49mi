@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-19T02:14:00.446Z",
+  "generatedAt": "2026-11-19T02:33:08.092Z",
   "collections": [
     {
       "name": "users",
@@ -1673,6 +1673,288 @@
       "indexes": [
         "CREATE UNIQUE INDEX idx_mmnode_map_key ON mind_map_nodes (mind_map_id, node_key)",
         "CREATE INDEX idx_mmnode_usuario ON mind_map_nodes (usuario_id)"
+      ]
+    },
+    {
+      "name": "sim_questoes",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "delete": "@request.auth.id != '' && usuario_id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "usuario_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "enunciado",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "alternativas",
+          "type": "json",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "gabarito",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "resolucao",
+          "type": "editor",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "area",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["linguagens", "humanas", "natureza", "matematica", "redacao"]
+        },
+        {
+          "name": "assunto",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "dificuldade",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["facil", "medio", "dificil"]
+        },
+        {
+          "name": "ano",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "instituicao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "origem",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "identificador",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "a",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "b",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "c",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_sim_questoes_area ON sim_questoes (area)",
+        "CREATE INDEX idx_sim_questoes_usuario ON sim_questoes (usuario_id)"
+      ]
+    },
+    {
+      "name": "simulados",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "view": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "create": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "update": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "delete": "@request.auth.id != '' && usuario_id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "usuario_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "titulo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "tipo",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["enem_dia1", "enem_dia2", "area", "personalizado"]
+        },
+        {
+          "name": "config_json",
+          "type": "json",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "questoes_ids",
+          "type": "json",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "duracao_min",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_simulados_usuario ON simulados (usuario_id)",
+        "CREATE INDEX idx_simulados_usuario_created ON simulados (usuario_id, created DESC)"
+      ]
+    },
+    {
+      "name": "simulado_tentativas",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "view": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "create": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "update": "@request.auth.id != '' && usuario_id = @request.auth.id",
+        "delete": "@request.auth.id != '' && usuario_id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "usuario_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "simulado_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "simulados"
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["em_andamento", "finalizada", "abandonada"]
+        },
+        {
+          "name": "respostas_json",
+          "type": "json",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "marcadas_json",
+          "type": "json",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "tempo_usado_seg",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "iniciado_em",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "finalizado_em",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "pct_acerto",
+          "type": "number",
+          "required": false,
+          "system": false
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_simtent_usuario ON simulado_tentativas (usuario_id)",
+        "CREATE INDEX idx_simtent_simulado ON simulado_tentativas (simulado_id)",
+        "CREATE INDEX idx_simtent_usuario_created ON simulado_tentativas (usuario_id, created DESC)"
       ]
     }
   ]
