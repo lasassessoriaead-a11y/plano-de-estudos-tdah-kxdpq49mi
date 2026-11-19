@@ -108,7 +108,7 @@ export default function Chat() {
   }
 
   return (
-    <div className="h-[calc(100vh-140px)] flex flex-col bg-white rounded-2xl border border-slate-200 shadow-subtle overflow-hidden">
+    <div className="h-[calc(100vh-140px)] flex flex-col bg-card rounded-2xl border border-border shadow-subtle overflow-hidden">
       {/* Header Chat */}
       <div className="p-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white flex items-center gap-3">
         <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-xl">
@@ -124,12 +124,12 @@ export default function Chat() {
       </div>
 
       {/* Quick Prompts Chips */}
-      <div className="p-3 bg-slate-50 border-b border-slate-200 overflow-x-auto flex gap-2">
+      <div className="p-3 bg-muted/50 border-b border-border overflow-x-auto flex gap-2">
         {quickPrompts.map((p, i) => (
           <button
             key={i}
             onClick={() => handleSend(p)}
-            className="px-3 py-1 bg-white hover:bg-violet-50 border border-slate-200 hover:border-violet-300 text-slate-700 text-xs font-semibold rounded-full shrink-0 transition-colors shadow-2xs"
+            className="px-3 py-1 bg-card hover:bg-accent border border-border hover:border-ring text-foreground text-xs font-semibold rounded-full shrink-0 transition-colors shadow-2xs"
           >
             ✨ {p}
           </button>
@@ -159,13 +159,13 @@ export default function Chat() {
                 className={`p-3.5 rounded-2xl text-xs sm:text-sm space-y-2 ${
                   isUser
                     ? 'bg-violet-600 text-white rounded-tr-none'
-                    : 'bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200'
+                    : 'bg-muted text-foreground rounded-tl-none border border-border'
                 }`}
               >
                 <div className="whitespace-pre-wrap leading-relaxed">{m.content}</div>
 
                 {m.citations && m.citations.length > 0 && (
-                  <div className="pt-2 border-t border-slate-200 text-[11px] text-slate-500 space-y-1">
+                  <div className="pt-2 border-t border-border text-[11px] text-muted-foreground space-y-1">
                     <p className="font-bold">Fontes consultadas:</p>
                     {m.citations.map((c, i) => (
                       <p key={i} className="italic">
@@ -187,7 +187,7 @@ export default function Chat() {
           e.preventDefault()
           handleSend()
         }}
-        className="p-3 bg-white border-t border-slate-200 flex gap-2"
+        className="p-3 bg-card border-t border-border flex gap-2"
       >
         <Input
           type="text"
@@ -195,12 +195,12 @@ export default function Chat() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={loading}
-          className="text-xs sm:text-sm rounded-xl border-slate-200 focus:border-violet-500"
+          className="text-xs sm:text-sm rounded-xl"
         />
         <Button
           type="submit"
           disabled={loading || !input.trim()}
-          className="bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl px-4 shrink-0"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl px-4 shrink-0"
         >
           {loading ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

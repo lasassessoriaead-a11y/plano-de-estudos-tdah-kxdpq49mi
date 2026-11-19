@@ -24,8 +24,8 @@ export function QuestaoCard({ questao, selectedAnswer, onAnswer }: QuestaoCardPr
   const isCorrect = answered && selectedAnswer === questao.gabarito
 
   return (
-    <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
-      <p className="text-sm font-bold text-slate-900">{questao.enunciado}</p>
+    <div className="bg-card p-4 rounded-xl border border-border space-y-3">
+      <p className="text-sm font-bold text-foreground">{questao.enunciado}</p>
       <div className="space-y-2">
         {alternativas.map((alt, idx) => {
           const isSelected = selectedAnswer === idx
@@ -37,18 +37,18 @@ export function QuestaoCard({ questao, selectedAnswer, onAnswer }: QuestaoCardPr
               onClick={() => onAnswer(questao.id, idx, questao.gabarito)}
               className={cn(
                 'w-full text-left p-3 rounded-lg text-sm font-medium transition-all',
-                !answered && 'hover:bg-violet-50 border border-slate-200 cursor-pointer',
+                !answered && 'hover:bg-accent border border-border cursor-pointer',
                 answered &&
                   isGabarito &&
-                  'bg-emerald-50 border border-emerald-300 text-emerald-900',
+                  'bg-emerald-500/15 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300',
                 answered &&
                   isSelected &&
                   !isGabarito &&
-                  'bg-red-50 border border-red-300 text-red-900',
+                  'bg-red-500/15 border border-red-500/40 text-red-700 dark:text-red-300',
                 answered &&
                   !isSelected &&
                   !isGabarito &&
-                  'border border-slate-200 text-slate-500 opacity-60',
+                  'border border-border text-muted-foreground opacity-60',
               )}
             >
               {String.fromCharCode(65 + idx)}) {alt}
@@ -60,7 +60,9 @@ export function QuestaoCard({ questao, selectedAnswer, onAnswer }: QuestaoCardPr
         <div
           className={cn(
             'p-3 rounded-lg text-sm',
-            isCorrect ? 'bg-emerald-50 text-emerald-900' : 'bg-amber-50 text-amber-900',
+            isCorrect
+              ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-200'
+              : 'bg-amber-500/15 text-amber-800 dark:text-amber-200',
           )}
         >
           <div className="flex items-center gap-2 font-bold mb-1">

@@ -43,8 +43,8 @@ export default function BancoErros() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Banco de Erros</h1>
-          <p className="text-xs text-slate-500 font-medium">
+          <h1 className="text-2xl font-black text-foreground tracking-tight">Banco de Erros</h1>
+          <p className="text-xs text-muted-foreground font-medium">
             Revisão espaçada (1d, 3d, 7d, 15d) para fixação permanente
           </p>
         </div>
@@ -55,7 +55,7 @@ export default function BancoErros() {
             className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
               filterStatus === 'errou'
                 ? 'bg-rose-600 text-white border-rose-600'
-                : 'bg-white text-slate-600 border-slate-200'
+                : 'bg-card text-muted-foreground border-border'
             }`}
           >
             Pendentes de Revisão
@@ -64,8 +64,8 @@ export default function BancoErros() {
             onClick={() => setFilterStatus('todos')}
             className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
               filterStatus === 'todos'
-                ? 'bg-violet-600 text-white border-violet-600'
-                : 'bg-white text-slate-600 border-slate-200'
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-card text-muted-foreground border-border'
             }`}
           >
             Todas as Questões
@@ -75,10 +75,10 @@ export default function BancoErros() {
 
       <div className="space-y-4">
         {listFiltered.length === 0 ? (
-          <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center space-y-2">
-            <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
-            <h3 className="text-base font-bold text-slate-800">Tudo limpo por aqui!</h3>
-            <p className="text-xs text-slate-500">
+          <div className="bg-card p-8 rounded-2xl border border-border text-center space-y-2">
+            <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-400 mx-auto" />
+            <h3 className="text-base font-bold text-foreground">Tudo limpo por aqui!</h3>
+            <p className="text-xs text-muted-foreground">
               Você não tem questões pendentes para revisão no momento.
             </p>
           </div>
@@ -88,32 +88,32 @@ export default function BancoErros() {
             return (
               <div
                 key={q.id}
-                className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle space-y-3"
+                className="bg-card p-5 rounded-2xl border border-border shadow-subtle space-y-3"
               >
                 <div className="flex items-center justify-between">
                   {mat && <SubjectBadge nome={mat.nome} cor={mat.cor} icone={mat.icone} />}
                   <span
                     className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full ${
                       q.status === 'errou'
-                        ? 'bg-rose-100 text-rose-700'
-                        : 'bg-emerald-100 text-emerald-700'
+                        ? 'bg-rose-500/15 text-rose-600 dark:text-rose-300'
+                        : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                     }`}
                   >
                     {q.status === 'errou' ? 'Revisão Pendente' : 'Acertou'}
                   </span>
                 </div>
 
-                <p className="text-sm font-bold text-slate-900">{q.enunciado}</p>
+                <p className="text-sm font-bold text-foreground">{q.enunciado}</p>
 
                 {q.explicacao && (
-                  <div className="p-3 bg-violet-50 rounded-xl border border-violet-100 text-xs text-violet-900">
-                    <p className="font-bold text-violet-950 mb-1">💡 Explicação Didática:</p>
+                  <div className="p-3 bg-primary/10 rounded-xl border border-primary/20 text-xs text-foreground">
+                    <p className="font-bold text-primary mb-1">💡 Explicação Didática:</p>
                     <p>{q.explicacao}</p>
                   </div>
                 )}
 
                 <div className="pt-2 flex items-center justify-between">
-                  <span className="text-[11px] text-slate-400 font-medium">
+                  <span className="text-[11px] text-muted-foreground font-medium">
                     Próxima revisão em breve
                   </span>
 
@@ -121,7 +121,7 @@ export default function BancoErros() {
                     <Button
                       size="sm"
                       onClick={() => handleMarcarRevisado(q)}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl h-8 px-3"
+                      className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-bold text-xs rounded-xl h-8 px-3"
                     >
                       Marcar como Revisado
                     </Button>

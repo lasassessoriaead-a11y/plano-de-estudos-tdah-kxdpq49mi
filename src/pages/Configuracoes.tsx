@@ -37,8 +37,8 @@ const opcoesPerfil = <T extends string>(
         onClick={() => setValor(k)}
         className={`text-left px-3 py-2.5 rounded-xl border text-sm font-bold transition-all ${
           valor === k
-            ? 'border-blue-500 bg-blue-500/15 text-white'
-            : 'border-white/10 bg-white/[0.03] text-slate-400 hover:border-white/25 hover:text-white'
+            ? 'border-primary bg-primary/15 text-primary'
+            : 'border-border bg-card text-muted-foreground hover:border-ring hover:text-foreground'
         }`}
       >
         {labels[k]}
@@ -152,25 +152,25 @@ export default function Configuracoes() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-white">
-        <Settings2 className="h-6 w-6 text-blue-400" /> Configurações
+      <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground">
+        <Settings2 className="h-6 w-6 text-primary" /> Configurações
       </h1>
 
-      <Card className="bg-white/[0.03] border-white/10">
+      <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm">
-            <GraduationCap className="h-4 w-4 text-blue-400" /> Perfil de estudo
+            <GraduationCap className="h-4 w-4 text-primary" /> Perfil de estudo
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="space-y-2">
-            <Label className="text-slate-300">Objetivo</Label>
+            <Label className="text-muted-foreground">Objetivo</Label>
             {opcoesPerfil(objetivo, setObjetivo, OBJETIVO_LABELS)}
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-slate-300">Horas por dia</Label>
-              <span className="text-sm font-extrabold text-blue-400">{horas}h</span>
+              <Label className="text-muted-foreground">Horas por dia</Label>
+              <span className="text-sm font-extrabold text-primary">{horas}h</span>
             </div>
             <Slider
               value={[horas]}
@@ -181,52 +181,53 @@ export default function Configuracoes() {
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-slate-300">Matérias mais difíceis</Label>
+            <Label className="text-muted-foreground">Matérias mais difíceis</Label>
             <Input
               type="text"
               placeholder="Ex.: Física, Química, Redação..."
               value={materiasDificeis}
               onChange={(e) => setMateriasDificeis(e.target.value)}
-              className="bg-white/5 border-white/15 text-white placeholder:text-slate-500 focus-visible:ring-blue-500 rounded-xl"
+              className="rounded-xl"
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-slate-300">Instituições / provas</Label>
+              <Label className="text-muted-foreground">Instituições / provas</Label>
               <Input
                 type="text"
                 placeholder="Ex.: UNICAMP, ESA..."
                 value={instituicoes}
                 onChange={(e) => setInstituicoes(e.target.value)}
-                className="bg-white/5 border-white/15 text-white placeholder:text-slate-500 focus-visible:ring-blue-500 rounded-xl"
+                className="rounded-xl"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300">Data prevista da prova</Label>
+              <Label className="text-muted-foreground">Data prevista da prova</Label>
               <Input
                 type="date"
                 value={dataProva}
                 onChange={(e) => setDataProva(e.target.value)}
-                className="bg-white/5 border-white/15 text-white focus-visible:ring-blue-500 rounded-xl [color-scheme:dark]"
+                className="rounded-xl"
+                style={{ colorScheme: theme }}
               />
             </div>
           </div>
           <div className="space-y-2">
-            <Label className="text-slate-300">Nível atual</Label>
+            <Label className="text-muted-foreground">Nível atual</Label>
             {opcoesPerfil(nivel, setNivel, NIVEL_LABELS)}
           </div>
           <div className="space-y-2">
-            <Label className="text-slate-300">Estilo de explicação</Label>
+            <Label className="text-muted-foreground">Estilo de explicação</Label>
             {opcoesPerfil<EstiloExplicacao>(estilo, setEstilo, ESTILO_LABELS)}
           </div>
           <div className="space-y-2">
-            <Label className="text-slate-300">Preferência de estudo</Label>
+            <Label className="text-muted-foreground">Preferência de estudo</Label>
             {opcoesPerfil(preferencia, setPreferencia, PREFERENCIA_LABELS)}
           </div>
           <Button
             onClick={salvarPerfil}
             disabled={savingPerfil}
-            className="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl gap-1.5"
+            className="font-bold rounded-xl gap-1.5"
           >
             {savingPerfil && <Loader2 className="h-4 w-4 animate-spin" />}
             Salvar perfil de estudo
@@ -234,10 +235,10 @@ export default function Configuracoes() {
         </CardContent>
       </Card>
 
-      <Card className="bg-white/[0.03] border-white/10">
+      <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm">
-            <Palette className="h-4 w-4 text-blue-400" /> Aparência
+            <Palette className="h-4 w-4 text-primary" /> Aparência
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -264,10 +265,10 @@ export default function Configuracoes() {
         </CardContent>
       </Card>
 
-      <Card className="bg-white/[0.03] border-white/10">
+      <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm">
-            <Target className="h-4 w-4 text-blue-400" /> Metas de estudo
+            <Target className="h-4 w-4 text-primary" /> Metas de estudo
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">

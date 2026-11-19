@@ -79,18 +79,18 @@ export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProp
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-50 overflow-y-auto">
-      <div className="sticky top-0 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between z-10">
+    <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+      <div className="sticky top-0 bg-card border-b border-border px-4 py-3 flex items-center justify-between z-10">
         <div className="flex items-center gap-3 min-w-0">
           {mat && <SubjectBadge nome={mat.nome} cor={mat.cor} icone={mat.icone} />}
-          <h2 className="text-sm font-extrabold text-slate-900 truncate">{missao.titulo}</h2>
+          <h2 className="text-sm font-extrabold text-foreground truncate">{missao.titulo}</h2>
         </div>
-        <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-100 shrink-0">
-          <X className="w-5 h-5 text-slate-600" />
+        <button onClick={onClose} className="p-2 rounded-lg hover:bg-muted shrink-0">
+          <X className="w-5 h-5 text-muted-foreground" />
         </button>
       </div>
 
-      <div className="flex items-center gap-1 px-4 py-3 bg-white border-b border-slate-100">
+      <div className="flex items-center gap-1 px-4 py-3 bg-card border-b border-border">
         {phases.map((p, i) => {
           const isActive = p.key === phase
           const isPast = phaseIdx > i
@@ -99,16 +99,16 @@ export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProp
               <div
                 className={cn(
                   'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold',
-                  isActive && 'bg-violet-600 text-white',
-                  isPast && 'bg-emerald-100 text-emerald-700',
-                  !isActive && !isPast && 'bg-slate-100 text-slate-500',
+                  isActive && 'bg-primary text-primary-foreground',
+                  isPast && 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
+                  !isActive && !isPast && 'bg-muted text-muted-foreground',
                 )}
               >
                 <p.icon className="w-3.5 h-3.5" />
                 {p.label}
               </div>
               {i < 2 && (
-                <div className={cn('w-4 h-0.5', isPast ? 'bg-emerald-300' : 'bg-slate-200')} />
+                <div className={cn('w-4 h-0.5', isPast ? 'bg-emerald-400' : 'bg-border')} />
               )}
             </div>
           )
@@ -118,42 +118,42 @@ export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProp
       <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
         {loading ? (
           <div className="text-center py-20">
-            <p className="text-sm text-slate-500 font-medium">Carregando...</p>
+            <p className="text-sm text-muted-foreground font-medium">Carregando...</p>
           </div>
         ) : phase === 'teoria' ? (
           <div
-            className="prose prose-sm max-w-none prose-headings:text-slate-900 prose-p:text-slate-700 prose-li:text-slate-700 prose-strong:text-slate-900"
+            className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground/90 prose-li:text-foreground/90 prose-strong:text-foreground"
             dangerouslySetInnerHTML={{
               __html: pilde?.conteudo_teorico || '<p>Conteúdo não disponível.</p>',
             }}
           />
         ) : phase === 'pratica' ? (
           <div className="space-y-4">
-            <p className="text-sm font-bold text-slate-900">
+            <p className="text-sm font-bold text-foreground">
               {questoes.length} questões — responda todas para avançar
             </p>
             {questoes.map((q, i) => (
               <div key={q.id}>
-                <p className="text-xs font-bold text-slate-400 mb-1.5">Questão {i + 1}</p>
+                <p className="text-xs font-bold text-muted-foreground mb-1.5">Questão {i + 1}</p>
                 <QuestaoCard questao={q} selectedAnswer={answers[q.id]} onAnswer={handleAnswer} />
               </div>
             ))}
             {questoes.length === 0 && (
-              <p className="text-sm text-slate-500 font-medium text-center py-8">
+              <p className="text-sm text-muted-foreground font-medium text-center py-8">
                 Nenhuma questão disponível.
               </p>
             )}
           </div>
         ) : (
           <div className="text-center py-16 space-y-4">
-            <Coffee className="w-12 h-12 text-violet-400 mx-auto" />
-            <h3 className="text-lg font-extrabold text-slate-900">Hora da Pausa!</h3>
-            <p className="text-sm text-slate-600 font-medium">
+            <Coffee className="w-12 h-12 text-primary mx-auto" />
+            <h3 className="text-lg font-extrabold text-foreground">Hora da Pausa!</h3>
+            <p className="text-sm text-muted-foreground font-medium">
               Respire fundo. Você merece este descanso.
             </p>
-            <div className="bg-violet-50 rounded-2xl p-6 max-w-xs mx-auto">
-              <p className="text-sm text-violet-900 font-medium">Respire 3 vezes:</p>
-              <p className="text-xs text-violet-700 mt-1">
+            <div className="bg-primary/10 rounded-2xl p-6 max-w-xs mx-auto">
+              <p className="text-sm text-foreground font-medium">Respire 3 vezes:</p>
+              <p className="text-xs text-muted-foreground mt-1">
                 Inspire (4s) → Segure (4s) → Expire (4s)
               </p>
             </div>
@@ -161,7 +161,7 @@ export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProp
         )}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-3 flex items-center justify-between gap-3">
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-3 flex items-center justify-between gap-3">
         <div>
           {phase !== 'teoria' && (
             <Button
@@ -176,7 +176,7 @@ export function SprintOverlay({ missao, onClose, onComplete }: SprintOverlayProp
         <Button
           onClick={handleAdvance}
           disabled={phase === 'pratica' && !allAnswered}
-          className="bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm rounded-xl flex items-center gap-1.5"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm rounded-xl flex items-center gap-1.5"
         >
           {phase === 'pausa' ? 'Concluir Sprint' : 'Avançar'}
           <ChevronRight className="w-4 h-4" />

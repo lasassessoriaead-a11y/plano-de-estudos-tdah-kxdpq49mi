@@ -54,33 +54,33 @@ export default function MissaoHoje() {
       )}
 
       <div>
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Missão de Hoje</h1>
-        <p className="text-sm text-slate-800 font-medium mt-1">
+        <h1 className="text-2xl font-black text-foreground tracking-tight">Missão de Hoje</h1>
+        <p className="text-sm text-muted-foreground font-medium mt-1">
           Sprints focados de 15 minutos (Teoria + Prática + Pausa)
         </p>
       </div>
 
       {missoes.length > 0 && (
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-violet-600" />
-              <span className="text-sm font-bold text-slate-900">Progresso do Dia</span>
+              <Target className="w-5 h-5 text-primary" />
+              <span className="text-sm font-bold text-foreground">Progresso do Dia</span>
             </div>
-            <span className="text-sm font-extrabold text-violet-600">
+            <span className="text-sm font-extrabold text-primary">
               {concluidas.length} de {missoes.length} concluídas
             </span>
           </div>
-          <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
+          <div className="w-full bg-muted h-3 rounded-full overflow-hidden">
             <div
               className="bg-gradient-to-r from-violet-600 to-amber-500 h-full rounded-full transition-all duration-500"
               style={{ width: `${progresso}%` }}
             />
           </div>
           {proximaMissao && (
-            <p className="text-sm text-slate-800 font-medium mt-3">
+            <p className="text-sm text-muted-foreground font-medium mt-3">
               Próxima missão:{' '}
-              <span className="font-bold text-slate-900">{proximaMissao.titulo}</span>
+              <span className="font-bold text-foreground">{proximaMissao.titulo}</span>
             </p>
           )}
         </div>
@@ -94,35 +94,35 @@ export default function MissaoHoje() {
           return (
             <div
               key={m.id}
-              className={`bg-white p-5 rounded-2xl border shadow-subtle hover:shadow-elevation transition-all space-y-4 flex flex-col justify-between ${isNext ? 'border-violet-400 ring-2 ring-violet-100' : 'border-slate-200'}`}
+              className={`bg-card p-5 rounded-2xl border shadow-subtle hover:shadow-elevation transition-all space-y-4 flex flex-col justify-between ${isNext ? 'border-primary ring-2 ring-primary/20' : 'border-border'}`}
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black ${isDone ? 'bg-emerald-100 text-emerald-700' : isNext ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-800'}`}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black ${isDone ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' : isNext ? 'bg-primary/15 text-primary' : 'bg-muted text-foreground'}`}
                     >
                       {isDone ? <CheckCircle2 className="w-5 h-5" /> : idx + 1}
                     </div>
                     {mat && <SubjectBadge nome={mat.nome} cor={mat.cor} icone={mat.icone} />}
                   </div>
                   {isNext && (
-                    <span className="text-xs font-bold text-violet-600 bg-violet-50 px-2.5 py-1 rounded-full">
+                    <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
                       A seguir
                     </span>
                   )}
                 </div>
-                <h3 className="text-base font-extrabold text-slate-900">{m.titulo}</h3>
+                <h3 className="text-base font-extrabold text-foreground">{m.titulo}</h3>
               </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <div className="pt-3 border-t border-border flex items-center justify-between gap-2">
                 <span
-                  className={`text-sm font-bold ${isDone ? 'text-emerald-700' : 'text-slate-800'}`}
+                  className={`text-sm font-bold ${isDone ? 'text-emerald-700 dark:text-emerald-300' : 'text-muted-foreground'}`}
                 >
                   {isDone ? '✓ Concluído' : '• Pendente'}
                 </span>
                 <Button
                   onClick={() => setActiveMissao(m)}
-                  className="bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm rounded-xl flex items-center gap-1.5"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm rounded-xl flex items-center gap-1.5"
                 >
                   <Play className="w-4 h-4 fill-white" />
                   {isDone ? 'Refazer Sprint' : 'Iniciar Sprint'}
@@ -134,9 +134,11 @@ export default function MissaoHoje() {
       </div>
 
       {missoes.length === 0 && (
-        <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center">
-          <Clock className="w-8 h-8 text-slate-600 mx-auto mb-3" />
-          <p className="text-sm text-slate-800 font-medium">Nenhuma missão programada para hoje.</p>
+        <div className="bg-card p-8 rounded-2xl border border-border text-center">
+          <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground font-medium">
+            Nenhuma missão programada para hoje.
+          </p>
         </div>
       )}
     </div>

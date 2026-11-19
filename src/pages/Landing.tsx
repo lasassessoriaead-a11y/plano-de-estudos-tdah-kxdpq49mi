@@ -52,7 +52,7 @@ const beneficios = [
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
+    <div className="force-dark min-h-screen text-white overflow-x-hidden">
       {/* Fundo decorativo */}
       <div className="fixed inset-0 pointer-events-none" aria-hidden="true">
         <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-blue-600/15 blur-[120px]" />

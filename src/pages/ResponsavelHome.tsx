@@ -67,8 +67,10 @@ export default function ResponsavelHome() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Painel do Responsável</h1>
-        <p className="text-sm text-slate-500 font-medium mt-1">
+        <h1 className="text-2xl font-black text-foreground tracking-tight">
+          Painel do Responsável
+        </h1>
+        <p className="text-sm text-muted-foreground font-medium mt-1">
           Acompanhamento do acúmulo da recompensa por dias de estudo concluídos
         </p>
       </div>
@@ -92,19 +94,19 @@ export default function ResponsavelHome() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle space-y-2">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-subtle space-y-2">
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-violet-600" />
-            <h3 className="text-sm font-extrabold text-slate-900">Ciclo atual</h3>
+            <TrendingUp className="w-4 h-4 text-primary" />
+            <h3 className="text-sm font-extrabold text-foreground">Ciclo atual</h3>
           </div>
-          <p className="text-3xl font-black text-slate-900">
+          <p className="text-3xl font-black text-foreground">
             {cicloAtual}
-            <span className="text-base font-bold text-slate-400">/10 dias</span>
+            <span className="text-base font-bold text-muted-foreground">/10 dias</span>
           </p>
-          <p className="text-xs text-slate-500 font-medium">
+          <p className="text-xs text-muted-foreground font-medium">
             Próximo bônus de R$ 150,00 em {daysToNextBonus} dia(s)
           </p>
-          <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+          <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
             <div
               className="bg-gradient-to-r from-amber-500 to-violet-600 h-full rounded-full transition-all duration-500"
               style={{ width: `${cicloAtual * 10}%` }}
@@ -112,25 +114,25 @@ export default function ResponsavelHome() {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle space-y-2">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-subtle space-y-2">
           <div className="flex items-center gap-2">
-            <CalendarCheck className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-sm font-extrabold text-slate-900">Dias de estudo concluídos</h3>
+            <CalendarCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <h3 className="text-sm font-extrabold text-foreground">Dias de estudo concluídos</h3>
           </div>
-          <p className="text-3xl font-black text-slate-900">{completedDays}</p>
-          <p className="text-xs text-slate-500 font-medium">
+          <p className="text-3xl font-black text-foreground">{completedDays}</p>
+          <p className="text-xs text-muted-foreground font-medium">
             R$ 15,00 por dia concluído • bônus de R$ 150,00 a cada ciclo de 10 dias
           </p>
         </div>
       </div>
 
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-subtle space-y-3">
+      <div className="bg-card p-5 rounded-2xl border border-border shadow-subtle space-y-3">
         <div className="flex items-center gap-2">
-          <Gift className="w-4 h-4 text-amber-600" />
-          <h3 className="text-sm font-extrabold text-slate-900">Recompensas disponíveis</h3>
+          <Gift className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+          <h3 className="text-sm font-extrabold text-foreground">Recompensas disponíveis</h3>
         </div>
         {available.length === 0 ? (
-          <p className="text-xs text-slate-400 italic py-3">
+          <p className="text-xs text-muted-foreground italic py-3">
             Nenhuma recompensa disponível ainda. Elas são geradas automaticamente quando o aluno
             conclui os dias de estudo.
           </p>
@@ -139,18 +141,18 @@ export default function ResponsavelHome() {
             {available.slice(0, 5).map((r) => (
               <div
                 key={r.id}
-                className="flex items-center gap-3 p-3 rounded-xl bg-amber-50 border border-amber-100"
+                className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25"
               >
-                <Gift className="w-4 h-4 text-amber-600 shrink-0" />
-                <p className="text-sm font-bold text-slate-800 truncate flex-1">{r.titulo}</p>
-                <span className="text-xs font-black text-emerald-700 shrink-0">
+                <Gift className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                <p className="text-sm font-bold text-foreground truncate flex-1">{r.titulo}</p>
+                <span className="text-xs font-black text-emerald-700 dark:text-emerald-300 shrink-0">
                   {r.tipo === 'dinheiro' ? `R$ ${(r.valor || 0).toFixed(2)}` : 'Especial'}
                 </span>
               </div>
             ))}
           </div>
         )}
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-muted-foreground">
           Missões concluídas no total: <span className="font-bold">{missoesConcluidas}</span>
         </p>
       </div>

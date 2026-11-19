@@ -207,7 +207,7 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <div className="force-dark min-h-screen text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute -top-32 left-1/3 w-[400px] h-[400px] rounded-full bg-blue-600/10 blur-[120px] pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-xl animate-fade-in">

@@ -51,11 +51,11 @@ export default function LayoutSidebar({ open, onClose }: Props) {
 
       <aside
         className={cn(
-          'w-64 shrink-0 border-r border-white/10 bg-[#0a0a0c] flex flex-col h-screen sticky top-0 z-50 transition-transform duration-200',
+          'w-64 shrink-0 border-r border-sidebar-border bg-sidebar-background flex flex-col h-screen sticky top-0 z-50 transition-transform duration-200',
           isMobile && `fixed top-0 left-0 h-full ${open ? 'translate-x-0' : '-translate-x-full'}`,
         )}
       >
-        <div className="p-4 border-b border-white/10">
+        <div className="p-4 border-b border-sidebar-border">
           <Link to="/inicio" onClick={onClose}>
             <Logo size="sm" />
           </Link>
@@ -74,14 +74,16 @@ export default function LayoutSidebar({ open, onClose }: Props) {
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all duration-150 group',
                   active
-                    ? 'bg-blue-600/15 text-blue-300 border border-blue-500/25'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent',
+                    ? 'bg-sidebar-accent text-sidebar-accent-foreground border border-sidebar-primary/25'
+                    : 'text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent border border-transparent',
                 )}
               >
                 <Icon
                   className={cn(
                     'w-4.5 h-4.5 shrink-0 transition-colors',
-                    active ? 'text-blue-400' : 'text-slate-500 group-hover:text-slate-300',
+                    active
+                      ? 'text-sidebar-primary'
+                      : 'text-muted-foreground/70 group-hover:text-sidebar-foreground',
                   )}
                 />
                 <span className="truncate">{item.label}</span>
@@ -90,8 +92,8 @@ export default function LayoutSidebar({ open, onClose }: Props) {
           })}
         </nav>
 
-        <div className="p-3 border-t border-white/10">
-          <p className="text-[10px] font-bold text-slate-600 text-center leading-relaxed">
+        <div className="p-3 border-t border-sidebar-border">
+          <p className="text-[10px] font-bold text-muted-foreground/60 text-center leading-relaxed">
             Inteligência que transforma estudo em aprovação.
           </p>
         </div>

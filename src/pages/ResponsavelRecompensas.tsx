@@ -67,8 +67,8 @@ export default function ResponsavelRecompensas() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Recompensas</h1>
-        <p className="text-xs text-slate-500 font-medium">
+        <h1 className="text-2xl font-black text-foreground tracking-tight">Recompensas</h1>
+        <p className="text-xs text-muted-foreground font-medium">
           Acompanhe o acúmulo da recompensa do aluno — visível apenas neste painel
         </p>
       </div>
@@ -81,27 +81,31 @@ export default function ResponsavelRecompensas() {
         <p className="text-4xl font-black">R$ {balance.toFixed(2).replace('.', ',')}</p>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-subtle space-y-3">
+      <div className="bg-card p-6 rounded-2xl border border-border shadow-subtle space-y-3">
         <div className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-violet-600" />
-          <h2 className="text-base font-extrabold text-slate-900">Ciclo de Recompensas</h2>
+          <TrendingUp className="w-5 h-5 text-primary" />
+          <h2 className="text-base font-extrabold text-foreground">Ciclo de Recompensas</h2>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100">
-            <p className="text-[11px] font-bold text-emerald-700 uppercase">Por dia concluído</p>
-            <p className="text-2xl font-black text-emerald-800">R$ 15,00</p>
+          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25">
+            <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 uppercase">
+              Por dia concluído
+            </p>
+            <p className="text-2xl font-black text-emerald-800 dark:text-emerald-200">R$ 15,00</p>
           </div>
-          <div className="p-3 rounded-xl bg-amber-50 border border-amber-100">
-            <p className="text-[11px] font-bold text-amber-700 uppercase">Bônus a cada 10 dias</p>
-            <p className="text-2xl font-black text-amber-800">R$ 150,00</p>
+          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25">
+            <p className="text-[11px] font-bold text-amber-700 dark:text-amber-300 uppercase">
+              Bônus a cada 10 dias
+            </p>
+            <p className="text-2xl font-black text-amber-800 dark:text-amber-200">R$ 150,00</p>
           </div>
         </div>
         <div className="pt-2">
-          <div className="flex items-center justify-between text-xs font-bold text-slate-600 mb-1.5">
+          <div className="flex items-center justify-between text-xs font-bold text-muted-foreground mb-1.5">
             <span>Dias concluídos: {completedDays}</span>
             <span>Próximo bônus em {daysToNextBonus} dia(s)</span>
           </div>
-          <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+          <div className="w-full bg-muted h-3 rounded-full overflow-hidden">
             <div
               className="bg-gradient-to-r from-amber-500 to-violet-600 h-full rounded-full transition-all duration-500"
               style={{ width: `${(completedDays % 10) * 10}%` }}
@@ -111,20 +115,20 @@ export default function ResponsavelRecompensas() {
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-sm font-extrabold text-slate-700 flex items-center gap-2">
+        <h3 className="text-sm font-extrabold text-foreground flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-amber-500" /> Disponíveis para Resgate
         </h3>
         {available.length === 0 ? (
-          <p className="text-xs text-slate-400 italic py-4 text-center">
+          <p className="text-xs text-muted-foreground italic py-4 text-center">
             Nenhuma recompensa disponível ainda. Aguarde o aluno concluir os dias de estudo.
           </p>
         ) : (
           available.map((r) => (
             <div
               key={r.id}
-              className="bg-white p-4 rounded-xl border border-amber-200 shadow-subtle flex items-center gap-3"
+              className="bg-card p-4 rounded-xl border border-amber-500/30 shadow-subtle flex items-center gap-3"
             >
-              <div className="p-2 rounded-xl bg-amber-100 text-amber-700">
+              <div className="p-2 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
                 {r.tipo === 'dinheiro' ? (
                   <Wallet className="w-5 h-5" />
                 ) : (
@@ -132,8 +136,8 @@ export default function ResponsavelRecompensas() {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-slate-800 truncate">{r.titulo}</p>
-                <p className="text-xs text-slate-500">
+                <p className="text-sm font-bold text-foreground truncate">{r.titulo}</p>
+                <p className="text-xs text-muted-foreground">
                   {r.tipo === 'dinheiro'
                     ? `R$ ${(r.valor || 0).toFixed(2)}`
                     : 'Recompensa especial'}{' '}
@@ -143,7 +147,7 @@ export default function ResponsavelRecompensas() {
               <Button
                 size="sm"
                 onClick={() => handleResgatar(r.id)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg h-8"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg h-8 dark:bg-emerald-500 dark:hover:bg-emerald-600"
               >
                 <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Resgatar
               </Button>
@@ -154,15 +158,15 @@ export default function ResponsavelRecompensas() {
 
       {redeemed.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-extrabold text-slate-700 flex items-center gap-2">
+          <h3 className="text-sm font-extrabold text-foreground flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Já Resgatadas
           </h3>
           {redeemed.map((r) => (
             <div
               key={r.id}
-              className="bg-white p-4 rounded-xl border border-slate-200 opacity-60 flex items-center gap-3"
+              className="bg-card p-4 rounded-xl border border-border opacity-60 flex items-center gap-3"
             >
-              <div className="p-2 rounded-xl bg-slate-100 text-slate-400">
+              <div className="p-2 rounded-xl bg-muted text-muted-foreground">
                 {r.tipo === 'dinheiro' ? (
                   <Wallet className="w-5 h-5" />
                 ) : (
@@ -170,8 +174,10 @@ export default function ResponsavelRecompensas() {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-slate-500 line-through truncate">{r.titulo}</p>
-                <p className="text-xs text-slate-400">
+                <p className="text-sm font-bold text-muted-foreground line-through truncate">
+                  {r.titulo}
+                </p>
+                <p className="text-xs text-muted-foreground">
                   {r.tipo === 'dinheiro'
                     ? `R$ ${(r.valor || 0).toFixed(2)}`
                     : 'Recompensa especial'}

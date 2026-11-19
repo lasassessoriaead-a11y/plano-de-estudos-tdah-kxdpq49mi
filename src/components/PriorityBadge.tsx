@@ -7,14 +7,14 @@ interface PriorityBadgeProps {
 
 export function PriorityBadge({ prioridade = 1, className }: PriorityBadgeProps) {
   let label = 'Prioridade Baixa'
-  let styleClasses = 'bg-slate-100 text-slate-700 border-slate-200'
+  let styleClasses = 'bg-muted text-muted-foreground border-border'
 
   if (prioridade === 1) {
     label = 'Prioridade Alta (ENEM)'
-    styleClasses = 'bg-rose-50 text-rose-700 border-rose-200'
+    styleClasses = 'bg-rose-500/15 text-rose-600 dark:text-rose-300 border-rose-500/30'
   } else if (prioridade === 2) {
     label = 'Prioridade Média'
-    styleClasses = 'bg-amber-50 text-amber-700 border-amber-200'
+    styleClasses = 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30'
   }
 
   return (

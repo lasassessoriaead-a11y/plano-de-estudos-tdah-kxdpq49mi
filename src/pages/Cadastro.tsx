@@ -62,7 +62,7 @@ export default function Cadastro() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-4 py-10 relative overflow-hidden">
+    <div className="force-dark min-h-screen text-white flex items-center justify-center p-4 py-10 relative overflow-hidden">
       <div className="absolute -top-32 -left-32 w-[400px] h-[400px] rounded-full bg-blue-600/15 blur-[120px] pointer-events-none" />
       <div className="absolute -bottom-32 -right-32 w-[300px] h-[300px] rounded-full bg-cyan-500/10 blur-[100px] pointer-events-none" />
 

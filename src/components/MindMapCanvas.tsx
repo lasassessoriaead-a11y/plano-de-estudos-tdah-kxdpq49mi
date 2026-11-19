@@ -343,24 +343,24 @@ export default function MindMapCanvas({
   return (
     <div className="relative">
       {/* controles de zoom */}
-      <div className="absolute top-3 right-3 z-40 flex items-center gap-1 bg-white/95 border border-slate-200 rounded-xl px-2 py-1 shadow-sm">
+      <div className="absolute top-3 right-3 z-40 flex items-center gap-1 bg-card/95 border border-border rounded-xl px-2 py-1 shadow-sm">
         <button
-          className="px-2 text-sm font-bold text-slate-600 hover:text-violet-600"
+          className="px-2 text-sm font-bold text-muted-foreground hover:text-primary"
           onClick={() => setZoom((z) => Math.max(0.4, +(z - 0.1).toFixed(2)))}
         >
           −
         </button>
-        <span className="text-[11px] font-semibold text-slate-500 w-9 text-center">
+        <span className="text-[11px] font-semibold text-muted-foreground w-9 text-center">
           {Math.round(zoom * 100)}%
         </span>
         <button
-          className="px-2 text-sm font-bold text-slate-600 hover:text-violet-600"
+          className="px-2 text-sm font-bold text-muted-foreground hover:text-primary"
           onClick={() => setZoom((z) => Math.min(1.5, +(z + 0.1).toFixed(2)))}
         >
           +
         </button>
         <button
-          className="px-2 text-[10px] font-semibold text-slate-500 hover:text-violet-600"
+          className="px-2 text-[10px] font-semibold text-muted-foreground hover:text-primary"
           onClick={() => setZoom(0.85)}
         >
           reset
