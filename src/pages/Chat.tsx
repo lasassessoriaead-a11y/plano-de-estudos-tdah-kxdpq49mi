@@ -118,7 +118,7 @@ export default function Chat() {
           <h2 className="text-sm font-extrabold">Coruja Mentora AI</h2>
           <p className="text-[11px] text-violet-100 font-semibold flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            Online • Especialista em TDAH & Medicina
+            Online • Mentor de estudos NEXORA
           </p>
         </div>
       </div>

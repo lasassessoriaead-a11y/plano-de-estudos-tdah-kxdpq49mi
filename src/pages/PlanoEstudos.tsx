@@ -32,7 +32,7 @@ export default function PlanoEstudos() {
       <div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">Plano de Estudos</h1>
         <p className="text-sm text-slate-600 font-medium mt-1">
-          Mapeamento do edital por pesos de Medicina e nível de prioridade
+          Mapeamento do edital por pesos das provas e nível de prioridade
         </p>
       </div>
 

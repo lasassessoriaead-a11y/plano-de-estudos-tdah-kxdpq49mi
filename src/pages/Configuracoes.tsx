@@ -81,14 +81,14 @@ export default function Configuracoes() {
         }
         if (p) {
           setPerfil(p)
-          setObjetivo(p.objetivo)
+          if (p.objetivo) setObjetivo(p.objetivo)
           setHoras(p.horas_por_dia ?? 2)
           setMateriasDificeis(p.materias_dificeis || '')
           setInstituicoes(p.instituicoes || '')
           setDataProva(p.data_prova || '')
-          setNivel(p.nivel_atual)
-          setEstilo(p.estilo_explicacao)
-          setPreferencia(p.preferencia_estudo)
+          if (p.nivel_atual) setNivel(p.nivel_atual)
+          if (p.estilo_explicacao) setEstilo(p.estilo_explicacao)
+          if (p.preferencia_estudo) setPreferencia(p.preferencia_estudo)
         }
       } catch (err) {
         toast({
@@ -217,7 +217,7 @@ export default function Configuracoes() {
           </div>
           <div className="space-y-2">
             <Label className="text-slate-300">Estilo de explicação</Label>
-            {opcoesPerfil(estilo, setEstilo, ESTILO_LABELS)}
+            {opcoesPerfil<EstiloExplicacao>(estilo, setEstilo, ESTILO_LABELS)}
           </div>
           <div className="space-y-2">
             <Label className="text-slate-300">Preferência de estudo</Label>

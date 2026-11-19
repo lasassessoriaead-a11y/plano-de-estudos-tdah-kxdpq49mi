@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
-import { pb } from '@/lib/pocketbase/client'
+import pb from '@/lib/pocketbase/client'
 import { getMaterias } from '@/services/materias'
 import { getTopicos } from '@/services/topicos'
 import { getNotifications } from '@/services/premium'

@@ -41,6 +41,11 @@ export const NIVEL_LABELS: Record<NivelAtual, string> = {
   avancado: 'Avançado',
 }
 
+export const ESTILO_LABELS: Record<EstiloExplicacao, string> = {
+  resumido: 'Resumido',
+  detalhado: 'Detalhado',
+}
+
 export const PREFERENCIA_LABELS: Record<PreferenciaEstudo, string> = {
   questoes: 'Resolver questões',
   leitura: 'Leitura e teoria',
