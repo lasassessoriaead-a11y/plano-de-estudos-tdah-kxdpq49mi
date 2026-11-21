@@ -21,8 +21,9 @@ import {
   PreferenciaEstudo,
   PerfilEstudoRecord,
 } from '@/services/perfil'
-import { Loader2, Settings2, Target, Palette, GraduationCap } from 'lucide-react'
+import { Loader2, Settings2, Target, Palette, GraduationCap, CalendarDays } from 'lucide-react'
 import { useTheme } from '@/hooks/use-theme'
+import { ConnectorButton } from '@/components/skip/ConnectorButton'
 
 const opcoesPerfil = <T extends string>(
   valor: T,
@@ -261,6 +262,28 @@ export default function Configuracoes() {
           <p className="mt-2 text-xs text-muted-foreground">
             A identidade NEXORA usa grafite com azul elétrico — o tema claro mantém contraste alto
             para leitura.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <CalendarDays className="h-4 w-4 text-primary" /> Google Agenda
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Conecte sua conta Google para levar as tarefas e revisões do seu cronograma direto para
+            a sua Google Agenda — cada evento criado pelo NEXORA recebe o prefixo "NEXORA —".
+          </p>
+          <ConnectorButton
+            toolkit="googlecalendar"
+            name="Google Agenda"
+            className="text-foreground"
+          />
+          <p className="text-[11px] text-muted-foreground">
+            A sincronização acontece no Cronograma, no botão "Sincronizar com Google Agenda".
           </p>
         </CardContent>
       </Card>
