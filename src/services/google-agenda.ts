@@ -191,6 +191,9 @@ export const sincronizarComGoogleAgenda = async (
   if (novos.length === 0) return { criados: 0, duplicados }
 
   // 4) Criação: um por um, com dedup garantido pela leitura feita antes.
+  // Slug confirmado via find_app_connector_tools (toolkit googlecalendar):
+  // GOOGLECALENDAR_CREATE_EVENT({ calendar_id?, summary?, start_datetime?,
+  // end_datetime? }) — datas em RFC3339 com offset, formato de minParaHora.
   let criados = 0
   for (const ev of novos) {
     const r = await execute('GOOGLECALENDAR_CREATE_EVENT', {
